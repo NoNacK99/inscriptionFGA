@@ -47,12 +47,12 @@
 <label class="champ">Nom<input type="text" name="nom" autocomplete="family-name" required></label>
 <label class="champ">Prénom<input type="text" name="prenom" autocomplete="given-name" required></label>
 <div class="groupe"><span>Sexe</span>
-  <label class="option"><input type="radio" name="sexe" value="F">F</label>
+  <label class="option"><input type="radio" name="sexe" value="F" required>F</label>
   <label class="option"><input type="radio" name="sexe" value="M">M</label>
   <label class="option"><input type="radio" name="sexe" value="Non binaire">Non binaire</label>
 </div>
 <label class="champ">Date de naissance<input type="date" name="naissance" required></label>
-<label class="champ">Lieu de naissance<input type="text" name="lieu" required></label>
+<label class="champ">Ville de naissance<input type="text" name="lieu" required></label>
 <div class="groupe"><span>Langue maternelle</span>
   <label class="option"><input type="radio" name="langue" value="Français" required>Français</label>
   <label class="option"><input type="radio" name="langue" value="Autre">Autre</label>
@@ -70,7 +70,7 @@
 <fieldset>
 <legend>Adresse</legend>
 <div class="ligne2">
-  <label class="champ">No civique<input type="text" name="no_civique" inputmode="numeric" autocomplete="off"></label>
+  <label class="champ">No civique<input type="text" name="no_civique" autocomplete="off" required></label>
   <label class="champ">App.<input type="text" name="app"></label>
 </div>
 <label class="champ">Rue/Route<input type="text" name="rue" autocomplete="street-address" required></label>
@@ -95,48 +95,6 @@
 <label class="champ">Prénom du parent 1<input type="text" name="p1_prenom"></label>
 <label class="champ">Nom du parent 2<input type="text" name="p2_nom"></label>
 <label class="champ">Prénom du parent 2<input type="text" name="p2_prenom"></label>
-</fieldset>
-
-<fieldset>
-<legend>Cheminement scolaire/professionnel</legend>
-<label class="champ">Objectif professionnel<input type="text" name="obj_pro"></label>
-<label class="champ">Matières demandées<input type="text" name="matieres" required></label>
-<div class="groupe"><span>Objectif court terme</span>
-  <label class="option"><input type="checkbox" name="obj_court" value="DEP">DEP</label>
-  <label class="option"><input type="checkbox" name="obj_court" value="DES">DES</label>
-  <label class="option"><input type="checkbox" name="obj_court" value="CÉGEP">CÉGEP</label>
-  <label class="option"><input type="checkbox" name="obj_court" value="TDG">TDG</label>
-  <label class="option"><input type="checkbox" name="obj_court" value="TENS">TENS</label>
-  <label class="option"><input type="checkbox" name="obj_court" value="Autre">Autre</label>
-</div>
-<label class="champ">Si autre, précisez<input type="text" name="obj_court_autre"></label>
-<div class="groupe"><span>Quel est votre dernier niveau d'études complété ?</span>
-  <label class="option"><input type="radio" name="niveau" value="Primaire" required>Primaire</label>
-  <label class="option"><input type="radio" name="niveau" value="Secondaire 1">Secondaire 1</label>
-  <label class="option"><input type="radio" name="niveau" value="Secondaire 2">2</label>
-  <label class="option"><input type="radio" name="niveau" value="Secondaire 3">3</label>
-  <label class="option"><input type="radio" name="niveau" value="Secondaire 4">4</label>
-  <label class="option"><input type="radio" name="niveau" value="Secondaire 5">5</label>
-  <label class="option"><input type="radio" name="niveau" value="Collégial">Collégial</label>
-  <label class="option"><input type="radio" name="niveau" value="Universitaire">Universitaire</label>
-</div>
-<label class="champ">Indiquez votre provenance (dernière école ou centre fréquenté, marché du travail, etc.)<input type="text" name="provenance"></label>
-</fieldset>
-
-<fieldset>
-<legend>Fréquentation</legend>
-<div class="groupe"><span>Centre</span>
-  <label class="option"><input type="checkbox" name="lieu_freq" value="Damase-Boulanger">Damase-Boulanger</label>
-  <label class="option"><input type="checkbox" name="lieu_freq" value="PFE">PFE</label>
-</div>
-<div class="groupe"><span>Horaire</span>
-  <label class="option"><input type="radio" name="horaire" value="Jour" required>Jour</label>
-  <label class="option"><input type="radio" name="horaire" value="Soir">Soir</label>
-</div>
-<div class="groupe"><span>Temps de fréquentation</span>
-  <label class="option"><input type="radio" name="temps" value="Temps plein" required>Temps plein</label>
-  <label class="option"><input type="radio" name="temps" value="Temps partiel">Temps partiel</label>
-</div>
 </fieldset>
 
 <fieldset>
@@ -373,7 +331,7 @@ function construirePDF(form) {
   champ("Prénom", v("prenom"), L, 112);
   champ("Date de naissance", v("naissance").replace(/-/g, " / "), 128, 76);
   suivante();
-  champ("Lieu de naissance", v("lieu"), L, 100, true);
+  champ("Ville de naissance", v("lieu"), L, 100, true);
   suivante();
   x = L;
   x += txt("Langue maternelle : ", x, false);
@@ -419,42 +377,6 @@ function construirePDF(form) {
   champ("Prénom du parent 2", v("p2_prenom"), 108, 96);
   suivante();
 
-  /* Cheminement */
-  barre("Cheminement scolaire/professionnel");
-  champ("Objectif professionnel", v("obj_pro"), L, 100);
-  champ("Matières demandées", v("matieres"), 116, 88);
-  suivante();
-  x = L;
-  x += txt("Objectif court terme : ", x, false);
-  ["DEP","DES","CÉGEP","TDG","TENS"].forEach(o => { x = option(o, coche("obj_court", o), x); });
-  champ("Autre", v("obj_court_autre") || (coche("obj_court","Autre") ? "Autre" : ""), x, R - x);
-  suivante();
-  x = L;
-  x += txt("Quel est votre dernier niveau d'études complété ? ", x, false);
-  x = option("Primaire", coche("niveau","Primaire"), x);
-  x = option("Secondaire 1", coche("niveau","Secondaire 1"), x);
-  ["2","3","4","5"].forEach(n => { x = option(n, coche("niveau","Secondaire " + n), x); });
-  suivante();
-  x = L;
-  x = option("Collégial", coche("niveau","Collégial"), x, 6);
-  option("Universitaire", coche("niveau","Universitaire"), x);
-  suivante();
-  champ("Indiquez votre provenance (dernière école ou centre fréquenté, marché du travail, etc.)", v("provenance"), L, W);
-  suivante();
-
-  /* Fréquentation */
-  barre("Fréquentation");
-  x = L;
-  x = option("Damase-Boulanger", coche("lieu_freq","Damase-Boulanger"), x, 6);
-  option("PFE", coche("lieu_freq","PFE"), x);
-  suivante();
-  x = L;
-  x = option("Jour", coche("horaire","Jour"), x, 6);
-  x = option("Soir", coche("horaire","Soir"), x, 14);
-  x = option("Temps plein", coche("temps","Temps plein"), x, 6);
-  option("Temps partiel", coche("temps","Temps partiel"), x);
-  suivante();
-
   /* Autorisation */
   y -= 3;
   doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
@@ -478,10 +400,46 @@ function construirePDF(form) {
   txt("Signature de l'élève :", L, true);
   doc.setLineWidth(0.2); doc.line(L + 44, y + 1, L + 112, y + 1);
   const sig = imageSignature();
-  const s = Math.min(64 / sig.w, 19 / sig.h);
+  const s = Math.min(64 / sig.w, 15 / sig.h);
   const iw = sig.w * s, ih = sig.h * s;
   doc.addImage(sig.data, "PNG", L + 46 + (64 - iw) / 2, y + 0.5 - ih, iw, ih);
   champ("Date", v("date_sign").replace(/-/g, " / "), 130, 74, true);
+
+  /* Réservé à l'administration (texte fixe, jamais affiché dans la page) */
+  y += 6;
+  const yAdmin = y;
+  doc.setFillColor(217, 217, 217); doc.rect(L, yAdmin, W, 64, "F");
+  doc.setFillColor(170, 170, 170); doc.rect(L, yAdmin, W, 5.5, "F");
+  doc.setLineWidth(0.5); doc.line(L, yAdmin, R, yAdmin); doc.line(L, yAdmin + 5.5, R, yAdmin + 5.5);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+  doc.text("RÉSERVÉ À L'ADMINISTRATION", L + W / 2, yAdmin + 3.9, { align:"center" });
+  y = yAdmin + 10.5;
+
+  function blocAdmin(titre, texte) {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5);
+    doc.text(titre, L + 2, y);
+    doc.setLineWidth(0.2);
+    doc.line(L + 2, y + 0.8, L + 2 + doc.getTextWidth(titre), y + 0.8);
+    y += 4.5;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8);
+    const lignes = doc.splitTextToSize(texte, W - 4);
+    doc.text(lignes, L + 2, y);
+    y += 9.8;
+    let xa = L + 2;
+    xa += txt("Carte d’assurance maladie ", xa, false);
+    caseCochee(xa, false); xa += 3.2 + 6;
+    xa += txt("Permis de conduire ", xa, false);
+    caseCochee(xa, false); xa += 3.2 + 8;
+    champ("Autre, spécifiez", "", xa, R - 2 - xa);
+    y += 6.5;
+    champ("Date", "", L + 2, 56, true);
+    champ("Signature", "", L + 64, R - 2 - (L + 64), true);
+    y += 7.5;
+  }
+  blocAdmin("Preuve de la résidence de l'élève au Québec",
+    "J’atteste avoir pris connaissance des documents originaux suivants, présentés pour confirmer la résidence de l’élève au Québec :");
+  blocAdmin("Preuve de la résidence du parent, du répondant ou du conjoint de l'élève au Québec",
+    "J’atteste avoir pris connaissance des documents originaux suivants, présentés pour confirmer la résidence du parent, du répondant ou du conjoint de l’élève au Québec :");
 
   /* Logo du bas */
   placer(logoBas, R - 40, 267, 40, 10, true);

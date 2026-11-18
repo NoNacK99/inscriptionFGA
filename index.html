@@ -29,6 +29,11 @@
   button { font-size:1rem; padding:14px; border-radius:8px; border:0; cursor:pointer; }
   .principal { background:var(--jaune); font-weight:bold; width:100%; margin-top:14px; }
   .secondaire { background:var(--gris); margin-top:6px; }
+  .envoi { border:2px solid var(--jaune); background:#fffbe6; border-radius:8px; padding:12px 14px; margin-top:6px; }
+  .envoi h2 { font-size:1.05rem; margin:0 0 8px; }
+  .envoi ol { margin:0 0 10px; padding-left:22px; line-height:1.5; font-size:.95rem; }
+  .envoi .dest { word-break:break-all; font-weight:bold; }
+  .envoi button { width:100%; margin-top:0; }
   #message { margin-top:14px; padding:12px; border-radius:6px; display:none; line-height:1.4; }
   #message.ok { display:block; background:#e6f4e6; }
   #message.erreur { display:block; background:#fde8e8; border:1px solid #c33; }
@@ -37,7 +42,7 @@
 <body>
 <main>
 <h1>Formation générale<br>Formulaire d'inscription 2026-2027</h1>
-<p class="consigne">Remplissez le formulaire, signez avec le doigt, puis appuyez sur le bouton jaune. Choisissez ensuite votre application de courriel pour envoyer le fichier.</p>
+<p class="consigne">Remplissez le formulaire, signez avec le doigt, puis suivez les étapes d'envoi au bas de la page.</p>
 <p class="legende-oblig"><span class="req">*</span> Champ obligatoire</p>
 
 <form id="f" novalidate>
@@ -110,6 +115,18 @@ J’atteste que tous ces renseignements sont exacts. J’autorise la divulgation
 <label class="champ">Date<input type="date" name="date_sign" id="date_sign" required></label>
 </fieldset>
 
+<div class="envoi">
+  <h2>Comment envoyer votre formulaire</h2>
+  <ol>
+    <li>Appuyez sur le bouton jaune ci-dessous. Le PDF est créé et l'adresse de destination est copiée automatiquement.</li>
+    <li>Choisissez votre application de courriel dans le menu qui s'ouvre.</li>
+    <li>Dans la case « À », appuyez longuement avec le doigt, puis choisissez « Coller ».</li>
+    <li>Vérifiez que le PDF est joint, puis appuyez sur « Envoyer ».</li>
+  </ol>
+  <p style="margin:0 0 8px;font-size:.95rem;">Adresse de destination : <span class="dest adresse-dest"></span></p>
+  <button type="button" class="secondaire" id="copier">Copier l'adresse</button>
+</div>
+
 <button type="submit" class="principal">Générer le PDF et l'envoyer</button>
 <div id="message" role="status"></div>
 </form>
@@ -117,11 +134,42 @@ J’atteste que tous ces renseignements sont exacts. J’autorise la divulgation
 
 <script>
 /* ===== Réglages à modifier ===== */
-const COURRIEL_DESTINATAIRE = "adresse.collegue@exemple.ca";
+const COURRIEL_DESTINATAIRE = "sabrina.raymond@cslsj.qc.ca";
 const ANNEE = "2026-2027";
 /* Logos (facultatifs) : nom de fichier placé à côté de la page, ou texte "data:image/png;base64,..." */
 const LOGO_HAUT = "logo-cfga.png";
 const LOGO_BAS = "logo-css.png";
+
+/* ===== Affichage de l'adresse de destination ===== */
+document.querySelectorAll(".adresse-dest").forEach(e => { e.textContent = COURRIEL_DESTINATAIRE; });
+
+/* ===== Copie de l'adresse dans le presse-papiers ===== */
+function copieSecours(a) {
+  try {
+    const t = document.createElement("textarea");
+    t.value = a; t.setAttribute("readonly", "");
+    t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t);
+    t.select(); t.setSelectionRange(0, a.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(t);
+    return ok;
+  } catch (e) { return false; }
+}
+function copierAdresse() {
+  const a = COURRIEL_DESTINATAIRE;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(a).then(() => true).catch(() => copieSecours(a));
+  }
+  return Promise.resolve(copieSecours(a));
+}
+document.getElementById("copier").addEventListener("click", () => {
+  const bouton = document.getElementById("copier");
+  copierAdresse().then(ok => {
+    bouton.textContent = ok ? "Adresse copiée ✓" : "Copie impossible : notez l'adresse ci-dessus";
+    setTimeout(() => { bouton.textContent = "Copier l'adresse"; }, 3500);
+  });
+});
 
 /* ===== Chargement des logos ===== */
 let logoHaut = null, logoBas = null;
@@ -489,29 +537,44 @@ document.getElementById("f").addEventListener("submit", async e => {
     return;
   }
 
+  /* Copie lancée tout de suite, pendant le geste de l'élève */
+  const copie = copierAdresse();
+
   try {
     const doc = construirePDF(form);
     const nom = "Inscription-" + ANNEE + "-" + nettoyer(form.elements.nom.value) + "-" + nettoyer(form.elements.prenom.value) + ".pdf";
     const blob = doc.output("blob");
     const fichier = new File([blob], nom, { type:"application/pdf" });
 
+    let resultat = "";
     if (navigator.canShare && navigator.canShare({ files:[fichier] })) {
       try {
         await navigator.share({
           files:[fichier],
           title:"Inscription " + ANNEE,
-          text:"Formulaire d'inscription de " + form.elements.prenom.value + " " + form.elements.nom.value + ". Destinataire : " + COURRIEL_DESTINATAIRE
+          text:"Formulaire d'inscription de " + form.elements.prenom.value + " " + form.elements.nom.value
         });
-        afficher("Fichier prêt. Choisissez votre courriel, puis écrivez l'adresse : " + COURRIEL_DESTINATAIRE, "ok");
+        resultat = "partage";
       } catch (err) {
-        if (err.name !== "AbortError") {
-          doc.save(nom);
-          afficher("Partage impossible. Le PDF a été téléchargé : joignez-le à un courriel adressé à " + COURRIEL_DESTINATAIRE, "ok");
-        }
+        if (err.name !== "AbortError") { doc.save(nom); resultat = "telechargement"; }
+        else { resultat = "annule"; }
       }
     } else {
       doc.save(nom);
-      afficher("Le PDF a été téléchargé. Joignez-le à un courriel adressé à " + COURRIEL_DESTINATAIRE, "ok");
+      resultat = "telechargement";
+    }
+
+    const copieOk = await copie;
+    const consigneAdresse = copieOk
+      ? "L'adresse de destination est copiée : dans la case « À » de votre courriel, appuyez longuement, puis « Coller »."
+      : "Écrivez l'adresse de destination dans la case « À » : " + COURRIEL_DESTINATAIRE;
+
+    if (resultat === "partage") {
+      afficher("Fichier prêt. " + consigneAdresse, "ok");
+    } else if (resultat === "telechargement") {
+      afficher("Le PDF a été téléchargé. Joignez-le à un nouveau courriel. " + consigneAdresse, "ok");
+    } else {
+      afficher("Envoi annulé. Appuyez de nouveau sur le bouton jaune pour recommencer.", "erreur");
     }
     msg.scrollIntoView({behavior:"smooth", block:"center"});
   } catch (err) {

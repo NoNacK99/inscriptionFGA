@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Francisation : Formulaire d'inscription 2026-2027</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root { --jaune:#f0c419; --gris:#d9d9d9; --texte:#222; --rouge:#c00000; }
+  * { box-sizing:border-box; }
+  body { font-family:Arial,Helvetica,sans-serif; color:var(--texte); margin:0; background:#f4f4f4; font-size:17px; }
+  main { max-width:680px; margin:0 auto; padding:12px; background:#fff; }
+  h1 { font-size:1.3rem; text-align:center; margin:8px 0 8px; }
+  .consigne { text-align:center; font-size:.9rem; margin:0 0 6px; }
+  .legende-oblig { text-align:center; font-size:.9rem; margin:0 0 14px; }
+  .req { color:var(--rouge); font-weight:bold; margin-left:3px; }
+  fieldset { border:0; padding:0; margin:0 0 18px; }
+  legend { background:var(--gris); width:100%; padding:8px 10px; font-weight:bold; }
+  label.champ { display:block; margin:12px 0 0; font-size:.95rem; }
+  input[type=text], input[type=email], input[type=tel], input[type=date], select {
+    width:100%; padding:12px; font-size:16px; border:1px solid #888; border-radius:6px; margin-top:4px; background:#fff; }
+  .groupe { margin:12px 0 0; }
+  .groupe > span { display:block; font-size:.95rem; margin-bottom:4px; }
+  .option { display:inline-flex; align-items:center; min-height:44px; margin:0 14px 0 0; }
+  .option input { width:24px; height:24px; margin:0 8px 0 0; }
+  .autorisation { font-size:.8rem; line-height:1.35; border:1px solid #888; padding:10px; margin-top:6px; }
+  .autorisation p { margin:0 0 8px; }
+  .autorisation p:last-child { margin:0; }
+  canvas { width:100%; aspect-ratio:640/240; height:auto; border:2px dashed #888; border-radius:6px; background:#fff; touch-action:none; display:block; }
+  button { font-size:1rem; padding:14px; border-radius:8px; border:0; cursor:pointer; }
+  .principal { background:var(--jaune); font-weight:bold; width:100%; margin-top:14px; }
+  .secondaire { background:var(--gris); margin-top:6px; }
+  .test { background:#c00000; color:#fff; font-weight:bold; width:100%; margin:0 0 14px; display:none; }
+  .envoi { border:2px solid var(--jaune); background:#fffbe6; border-radius:8px; padding:12px 14px; margin-top:6px; }
+  .envoi h2 { font-size:1.05rem; margin:0 0 8px; }
+  .envoi ol { margin:0 0 10px; padding-left:22px; line-height:1.5; font-size:.95rem; }
+  .envoi .dest { word-break:break-all; font-weight:bold; }
+  .envoi button { width:100%; margin-top:0; }
+  #message { margin-top:14px; padding:12px; border-radius:6px; display:none; line-height:1.4; }
+  #message.ok { display:block; background:#e6f4e6; }
+  #message.erreur { display:block; background:#fde8e8; border:1px solid #c33; }
+</style>
+</head>
+<body>
+<main>
+<h1>Francisation<br>Formulaire d'inscription 2026-2027</h1>
+<p class="consigne">Remplissez le formulaire, signez avec le doigt, puis suivez les étapes d'envoi au bas de la page.<br>Fill in the form, sign with your finger, then follow the sending steps at the bottom.<br>Complete el formulario, firme con el dedo y siga los pasos de envío al final de la página.</p>
+<p class="consigne">Autre service que la Francisation ? <a href="index.html">Cliquez ici</a></p>
+<p class="legende-oblig"><span class="req">*</span> Champ obligatoire / Required field / Campo obligatorio</p>
+
+<button type="button" class="test" id="test">MODE TEST : remplir au hasard</button>
+
+<form id="f" novalidate>
+
+<fieldset>
+<legend>Identification / Identificación</legend>
+<label class="champ">Nom / Last name / Apellido<input type="text" name="nom" autocomplete="family-name" required></label>
+<label class="champ">Prénom / First name / Nombres<input type="text" name="prenom" autocomplete="given-name" required></label>
+<div class="groupe"><span>Sexe / Sexo</span>
+  <label class="option"><input type="radio" name="sexe" value="F" required>F</label>
+  <label class="option"><input type="radio" name="sexe" value="M">M</label>
+</div>
+<label class="champ">Date de naissance / Date of birth / Fecha de nacimiento<input type="date" name="naissance" required></label>
+<label class="champ">Ville de naissance / City of birth / Lugar de nacimiento (ciudad)<input type="text" name="lieu" required></label>
+<div class="groupe"><span>Langue parlée / Language spoken / Idioma hablado</span>
+  <label class="option"><input type="checkbox" name="langue" value="Français">Français</label>
+  <label class="option"><input type="checkbox" name="langue" value="English">English</label>
+  <label class="option"><input type="checkbox" name="langue" value="Español">Español</label>
+</div>
+<label class="champ">Autres / Other / Otros<input type="text" name="langue_autre"></label>
+<label class="champ">Nom de l’employeur / Name of sponsor or employer / Nombre del empleador<input type="text" name="employeur"></label>
+</fieldset>
+
+<fieldset>
+<legend>Adresse / Address / Dirección</legend>
+<label class="champ">Adresse complète / Complete address / Dirección completa<input type="text" name="adresse" autocomplete="street-address" required></label>
+<label class="champ">Ville / Town / Ciudad<input type="text" name="ville" autocomplete="address-level2" required></label>
+<label class="champ">Code postal / Postal code / Código postal<input type="text" name="code_postal" id="code_postal" autocomplete="postal-code" maxlength="7" placeholder="G8B 1A1" required></label>
+<label class="champ">Téléphone / Phone number / Número de teléfono<input type="tel" name="tel" class="tel" inputmode="tel" maxlength="12" placeholder="418 123-4567" autocomplete="tel" required></label>
+<label class="champ">Téléphone en cas d’urgence / Emergency number / Número de emergencia<input type="tel" name="tel_urgence" class="tel" inputmode="tel" maxlength="12" placeholder="418 123-4567"></label>
+<label class="champ">Courriel / E-mail / Correo electrónico<input type="email" name="courriel" autocomplete="email" required></label>
+</fieldset>
+
+<fieldset>
+<legend>Famille / Family / Familia</legend>
+<label class="champ">Nom et prénom du parent 1 / Name and first name of parent 1 / Apellido y nombres del padre<input type="text" name="p1"></label>
+<label class="champ">Nom et prénom du parent 2 / Name and first name of parent 2 / Apellido y nombres de la madre<input type="text" name="p2"></label>
+<label class="champ">Années de scolarité complétées / Years of schooling completed / Años de escolaridad completados<input type="text" name="scolarite" inputmode="numeric" maxlength="3"></label>
+</fieldset>
+
+<fieldset>
+<legend>Autorisation / Permission / Permiso</legend>
+<div class="autorisation" id="texte-auto">
+<p id="auto-fr">J’atteste que tous ces renseignements sont exacts. J’autorise la divulgation des renseignements précédents. J’autorise le Centre de services scolaire à consulter mon dossier en consignation au MEQ. Les données d’identification transmises sont susceptibles de faire l’objet d’une vérification auprès du Directeur de l’état civil. Aussi, dans le but de profiter des différents services offerts au Centre de services scolaire, j’autorise le partage de ces renseignements entre ses établissements et services afin que l’on puisse me contacter pour me proposer des services ou encore me demander de l’information pour fin de relance ou de statistique. Ces renseignements demeureront strictement confidentiels.</p>
+<p id="auto-en">I certify that all of this information is accurate. I authorize the disclosure of the foregoing information. I authorize the Centre de services scolaire to consult my file held on consignment at the MEQ. The identification data provided may be verified with the Director of Civil Status. Also, in order to benefit from the various services offered by the Centre de services scolaire, I authorize the sharing of this information among its establishments and services so that I may be contacted to be offered services or asked for information for follow-up or statistical purposes. This information will remain strictly confidential.</p>
+<p id="auto-es">Certifico que toda esta información es correcta. Autorizo la divulgación de la información anterior. Autorizo al Centro de servicios escolares a consultar mi expediente en consignación en el MEQ. Los datos de identificación transmitidos pueden ser verificados ante el Director del Estado Civil. Asimismo, con el fin de aprovechar los diversos servicios que ofrece el Centro de servicios escolares, autorizo el intercambio de esta información entre sus establecimientos y servicios, para que puedan contactarme y ofrecerme servicios, o solicitarme información con fines de seguimiento o estadísticos. Esta información permanecerá estrictamente confidencial.</p>
+</div>
+<div class="groupe"><span id="lib-sig">Signature / Firma (avec le doigt / with your finger / con el dedo)</span>
+  <canvas id="sig" width="640" height="240"></canvas>
+  <button type="button" class="secondaire" id="effacer">Effacer la signature / Clear / Borrar</button>
+</div>
+<label class="champ">Date / Fecha<input type="date" name="date_sign" id="date_sign" required></label>
+</fieldset>
+
+<div class="envoi">
+  <h2>Comment envoyer votre formulaire</h2>
+  <ol>
+    <li>Appuyez sur le bouton jaune ci-dessous. Le PDF est créé et l'adresse de destination est copiée automatiquement.</li>
+    <li>Choisissez votre application de courriel dans le menu qui s'ouvre.</li>
+    <li>Dans la case « À », appuyez longuement avec le doigt, puis choisissez « Coller ».</li>
+    <li>Vérifiez que le PDF est joint, puis appuyez sur « Envoyer ».</li>
+  </ol>
+  <p style="margin:0 0 8px;font-size:.95rem;">Adresse de destination : <span class="dest adresse-dest"></span></p>
+  <button type="button" class="secondaire" id="copier">Copier l'adresse</button>
+</div>
+
+<button type="submit" class="principal">Générer le PDF et l'envoyer</button>
+<div id="message" role="status"></div>
+</form>
+</main>
+
+<script>
+/* ===== Réglages à modifier ===== */
+const COURRIEL_DESTINATAIRE = "sabrina.raymond@cslsj.qc.ca";
+const ANNEE = "2026-2027";
+const LOGO_HAUT = "logo-cfga.png";
+const LOGO_BAS = "logo-css.png";
+
+/* ===== Encadré en haut à droite du PDF (rempli à la main par le personnel) =====
+   Une chaîne = une ligne vide. { cases:[...], ligne:"..." } = cases à cocher, puis ligne vide facultative. */
+const ENTETE = [
+  "# Fiche",
+  "Code permanent",
+  { cases: ["MIFI"] },
+  "Niveau",
+  { cases: ["Jour", "Soir"], ligne: "Heures" },
+  { cases: ["Temps plein", "Temps partiel"] }
+];
+
+/* ===== Affichage de l'adresse de destination ===== */
+document.querySelectorAll(".adresse-dest").forEach(e => { e.textContent = COURRIEL_DESTINATAIRE; });
+
+/* ===== Copie de l'adresse dans le presse-papiers ===== */
+function copieSecours(a) {
+  try {
+    const t = document.createElement("textarea");
+    t.value = a; t.setAttribute("readonly", "");
+    t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t);
+    t.select(); t.setSelectionRange(0, a.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(t);
+    return ok;
+  } catch (e) { return false; }
+}
+function copierAdresse() {
+  const a = COURRIEL_DESTINATAIRE;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(a).then(() => true).catch(() => copieSecours(a));
+  }
+  return Promise.resolve(copieSecours(a));
+}
+document.getElementById("copier").addEventListener("click", () => {
+  const bouton = document.getElementById("copier");
+  copierAdresse().then(ok => {
+    bouton.textContent = ok ? "Adresse copiée ✓" : "Copie impossible : notez l'adresse ci-dessus";
+    setTimeout(() => { bouton.textContent = "Copier l'adresse"; }, 3500);
+  });
+});
+
+/* ===== Chargement des logos ===== */
+let logoHaut = null, logoBas = null;
+function chargerImage(src, rappel) {
+  if (!src) return;
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img, 0, 0);
+      rappel({ data: c.toDataURL("image/png"), w: img.naturalWidth, h: img.naturalHeight });
+    } catch (e) { rappel(null); }
+  };
+  img.onerror = () => rappel(null);
+  img.src = src;
+}
+chargerImage(LOGO_HAUT, r => { logoHaut = r; });
+chargerImage(LOGO_BAS, r => { logoBas = r; });
+
+/* ===== Astérisques rouges sur les champs obligatoires ===== */
+function creerAsterisque() {
+  const s = document.createElement("span");
+  s.className = "req"; s.textContent = "*";
+  return s;
+}
+const dejaMarques = new Set();
+document.querySelectorAll("[required]").forEach(el => {
+  if (el.type === "radio") {
+    if (dejaMarques.has(el.name)) return;
+    dejaMarques.add(el.name);
+    const lib = el.closest(".groupe").querySelector("span");
+    lib.appendChild(creerAsterisque());
+  } else {
+    const label = el.closest("label");
+    if (label && label.firstChild) label.insertBefore(creerAsterisque(), label.firstChild.nextSibling);
+  }
+});
+document.getElementById("lib-sig").appendChild(creerAsterisque());
+
+/* ===== Formatage automatique : téléphones et code postal ===== */
+function formaterTel(valeur) {
+  let d = valeur.replace(/\D/g, "");
+  if (d.length === 11 && d[0] === "1") d = d.slice(1);
+  d = d.slice(0, 10);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return d.slice(0,3) + " " + d.slice(3);
+  return d.slice(0,3) + " " + d.slice(3,6) + "-" + d.slice(6);
+}
+document.querySelectorAll(".tel").forEach(champ => {
+  champ.addEventListener("input", () => { champ.value = formaterTel(champ.value); });
+});
+
+function formaterCodePostal(valeur) {
+  const c = valeur.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  return c.length > 3 ? c.slice(0,3) + " " + c.slice(3) : c;
+}
+const champCP = document.getElementById("code_postal");
+champCP.addEventListener("input", () => { champCP.value = formaterCodePostal(champCP.value); });
+
+function formatsInvalides(form) {
+  const erreurs = [];
+  const cp = form.elements.code_postal.value.trim();
+  if (cp && !/^[A-Z]\d[A-Z] \d[A-Z]\d$/.test(cp)) erreurs.push("Code postal (exemple : G8B 1A1)");
+  [["tel","Téléphone"],["tel_urgence","Téléphone en cas d’urgence"]].forEach(([nom, lib]) => {
+    const t = form.elements[nom].value.trim();
+    if (t && !/^\d{3} \d{3}-\d{4}$/.test(t)) erreurs.push(lib + " (exemple : 418 123-4567)");
+  });
+  return erreurs;
+}
+
+/* ===== Signature ===== */
+const canvas = document.getElementById("sig");
+const ctx = canvas.getContext("2d");
+let dessine = false, signe = false;
+let bx0 = 1e9, by0 = 1e9, bx1 = -1, by1 = -1;
+ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#000";
+
+function pos(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x:(e.clientX - r.left) * canvas.width / r.width,
+           y:(e.clientY - r.top) * canvas.height / r.height };
+}
+function suivre(p) {
+  bx0 = Math.min(bx0, p.x); by0 = Math.min(by0, p.y);
+  bx1 = Math.max(bx1, p.x); by1 = Math.max(by1, p.y);
+}
+canvas.addEventListener("pointerdown", e => {
+  dessine = true; const p = pos(e); suivre(p); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  canvas.setPointerCapture(e.pointerId); e.preventDefault();
+});
+canvas.addEventListener("pointermove", e => {
+  if (!dessine) return; const p = pos(e); suivre(p); ctx.lineTo(p.x, p.y); ctx.stroke(); signe = true; e.preventDefault();
+});
+["pointerup","pointercancel"].forEach(t => canvas.addEventListener(t, () => dessine = false));
+document.getElementById("effacer").onclick = () => {
+  ctx.clearRect(0,0,canvas.width,canvas.height); signe = false;
+  bx0 = 1e9; by0 = 1e9; bx1 = -1; by1 = -1;
+};
+
+function imageSignature() {
+  const marge = 6;
+  const x0 = Math.max(0, bx0 - marge), y0 = Math.max(0, by0 - marge);
+  const x1 = Math.min(canvas.width, bx1 + marge), y1 = Math.min(canvas.height, by1 + marge);
+  const w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0);
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  c.getContext("2d").drawImage(canvas, x0, y0, w, h, 0, 0, w, h);
+  return { data: c.toDataURL("image/png"), w: w, h: h };
+}
+
+/* Date du jour (heure locale) */
+(function () {
+  const d = new Date();
+  document.getElementById("date_sign").value =
+    d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+})();
+
+/* ===== Utilitaires ===== */
+const msg = document.getElementById("message");
+function afficher(texte, type) { msg.textContent = texte; msg.className = type; }
+function nettoyer(s) {
+  return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+
+/* ===== Mode test : visible seulement si l'adresse contient ?test ===== */
+(function () {
+  if (!/[?&]test\b/.test(location.search)) return;
+  const bouton = document.getElementById("test");
+  bouton.style.display = "block";
+
+  const hasard = t => t[Math.floor(Math.random() * t.length)];
+  const nombre = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+  const chiffres = n => Array.from({ length: n }, () => nombre(0, 9)).join("");
+  const lettre = () => String.fromCharCode(65 + nombre(0, 25));
+  const deux = n => String(n).padStart(2, "0");
+  const tel = () => "418 " + nombre(200, 999) + "-" + chiffres(4);
+
+  bouton.addEventListener("click", () => {
+    const form = document.getElementById("f");
+    const f = form.elements;
+    const noms = ["García", "Martínez", "Rodríguez", "López", "Silva", "Nguyen", "Ahmed", "Petrov"];
+    const prenoms = ["María", "Carlos", "Sofía", "Andrés", "Lucía", "Mateo", "Valentina", "Diego"];
+
+    f.nom.value = hasard(noms);
+    f.prenom.value = hasard(prenoms);
+    form.querySelector('[name="sexe"][value="' + hasard(["F", "M"]) + '"]').checked = true;
+    f.naissance.value = nombre(1970, 2004) + "-" + deux(nombre(1, 12)) + "-" + deux(nombre(1, 28));
+    f.lieu.value = hasard(["Bogotá", "Medellín", "Lima", "Caracas", "Casablanca", "Alger"]);
+    form.querySelectorAll('[name="langue"]').forEach(c => { c.checked = Math.random() < 0.5; });
+    f.langue_autre.value = Math.random() < 0.5 ? "Arabe" : "";
+    f.employeur.value = hasard(["Rio Tinto", "Hôpital d'Alma", "Restaurant Chez Marie", ""]);
+
+    f.adresse.value = nombre(1, 999) + " " + hasard(["rue Sacré-Coeur Ouest", "avenue du Pont Sud", "rue Collard Ouest"]) + ", app. " + nombre(1, 12);
+    f.ville.value = hasard(["Alma", "Saint-Bruno", "Delisle", "Métabetchouan–Lac-à-la-Croix"]);
+    f.code_postal.value = "G" + nombre(0, 9) + lettre() + " " + nombre(0, 9) + lettre() + nombre(0, 9);
+    f.tel.value = tel();
+    f.tel_urgence.value = tel();
+    f.courriel.value = "test" + nombre(100, 999) + "@exemple.com";
+
+    f.p1.value = hasard(prenoms) + " " + f.nom.value;
+    f.p2.value = hasard(prenoms) + " " + f.nom.value;
+    f.scolarite.value = String(nombre(6, 18));
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    bx0 = 1e9; by0 = 1e9; bx1 = -1; by1 = -1;
+    ctx.beginPath();
+    let px = 80, py = 130;
+    ctx.moveTo(px, py); suivre({ x: px, y: py });
+    for (let i = 1; i <= 40; i++) {
+      px = 80 + i * 12;
+      py = 120 + Math.sin(i / 2) * 40 + nombre(-10, 10);
+      ctx.lineTo(px, py); suivre({ x: px, y: py });
+    }
+    ctx.stroke();
+    signe = true;
+
+    afficher("Données de test insérées. Appuyez sur « Générer le PDF et l'envoyer ».", "ok");
+  });
+})();
+
+/* ===== Construction du PDF ===== */
+function construirePDF(form) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:"mm", format:"letter" });
+  const v = n => (form.elements[n] && form.elements[n].value || "").trim();
+  const choix = n => [...form.querySelectorAll('[name="' + n + '"]:checked')].map(e => e.value);
+  const coche = (n, val) => choix(n).includes(val);
+
+  const L = 12, R = 204, W = 192, FS = 8, LIGNE = 5.5;
+  let y = 36;
+
+  function txt(t, x, gras) {
+    doc.setFont("helvetica", gras ? "bold" : "normal"); doc.setFontSize(FS);
+    doc.text(t, x, y);
+    return doc.getTextWidth(t);
+  }
+  function champ(label, valeur, x, w, gras) {
+    doc.setFont("helvetica", gras ? "bold" : "normal"); doc.setFontSize(FS);
+    const intitule = label + " : ";
+    const lw = doc.getTextWidth(intitule);
+    doc.text(intitule, x, y);
+    const x0 = x + lw;
+    doc.setLineWidth(0.2); doc.line(x0, y + 1, x + w, y + 1);
+    if (valeur) {
+      doc.setFont("helvetica", "normal");
+      let fs = FS; doc.setFontSize(fs);
+      const maxw = x + w - x0 - 1;
+      while (doc.getTextWidth(valeur) > maxw && fs > 6) { fs -= 0.5; doc.setFontSize(fs); }
+      let t = valeur;
+      while (doc.getTextWidth(t) > maxw && t.length > 3) t = t.slice(0, -1);
+      doc.text(t === valeur ? t : t + "...", x0 + 1, y);
+      doc.setFontSize(FS);
+    }
+  }
+  function caseCochee(x, estCoche) {
+    doc.setLineWidth(0.25); doc.rect(x, y - 3, 3.2, 3.2);
+    if (estCoche) {
+      doc.setLineWidth(0.5);
+      doc.line(x + 0.5, y - 2.5, x + 2.7, y - 0.3);
+      doc.line(x + 2.7, y - 2.5, x + 0.5, y - 0.3);
+    }
+  }
+  function option(label, estCoche, x, ecart) {
+    const lw = txt(label + " ", x, false);
+    caseCochee(x + lw, estCoche);
+    return x + lw + 3.2 + (ecart === undefined ? 3 : ecart);
+  }
+  function barre(titre) {
+    y += 2;
+    doc.setFillColor(205, 205, 205); doc.rect(L, y, W, 4.6, "F");
+    doc.setLineWidth(0.6); doc.line(L, y, R, y); doc.line(L, y + 4.6, R, y + 4.6);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.text(titre, L + 5, y + 3.3);
+    y += 9;
+  }
+  function suivante() { y += LIGNE; }
+  function placer(img, x, yy, maxW, maxH, droite) {
+    if (!img) return;
+    const s = Math.min(maxW / img.w, maxH / img.h);
+    const w = img.w * s, h = img.h * s;
+    try { doc.addImage(img.data, "PNG", droite ? x + maxW - w : x, yy, w, h); } catch (e) {}
+  }
+
+  /* En-tête : logo, titre, encadré */
+  placer(logoHaut, L, 8, 44, 19, false);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
+  doc.text("Francisation", 108, 13, { align:"center" });
+  doc.text("Formulaire d'inscription", 108, 18, { align:"center" });
+  doc.text(ANNEE, 108, 23, { align:"center" });
+
+  const haut = 6, hl = 4.2, hauteur = ENTETE.length * hl + 3;
+  doc.setLineWidth(0.3); doc.rect(152, haut, 52, hauteur);
+  ENTETE.forEach((ligne, i) => {
+    const base = haut + 1.5 + (i + 1) * hl - 1.0;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+    if (typeof ligne === "string") {
+      const lw = doc.getTextWidth(ligne + " : ");
+      doc.text(ligne + " :", 154, base);
+      doc.setLineWidth(0.2); doc.line(154 + lw, base + 0.8, 202, base + 0.8);
+    } else {
+      let xc = 154;
+      ligne.cases.forEach(nom => {
+        doc.text(nom, xc, base);
+        const lw = doc.getTextWidth(nom + " ");
+        doc.setLineWidth(0.25); doc.rect(xc + lw, base - 2.6, 2.8, 2.8);
+        xc += lw + 2.8 + 3.5;
+      });
+      if (ligne.ligne) {
+        const lw = doc.getTextWidth(ligne.ligne + " : ");
+        doc.text(ligne.ligne + " :", xc, base);
+        doc.setLineWidth(0.2); doc.line(xc + lw, base + 0.8, 202, base + 0.8);
+      }
+    }
+  });
+  y = Math.max(36, haut + hauteur + 1.8);
+
+  /* Identification */
+  barre("Identification / Identificación");
+  champ("Nom / Last name / Apellido", v("nom"), L, 118);
+  let x = 134;
+  x += txt("Sexe / Sexo : ", x, false);
+  x = option("F", coche("sexe","F"), x);
+  option("M", coche("sexe","M"), x);
+  suivante();
+  champ("Prénom / First name / Nombres", v("prenom"), L, W);
+  suivante();
+  champ("Date de naissance / Date of birth / Fecha de nacimiento", v("naissance").replace(/-/g, " / "), L, W);
+  suivante();
+  champ("Ville de naissance / City of birth / Lugar de nacimiento (ciudad)", v("lieu"), L, W);
+  suivante();
+  x = L;
+  x += txt("Langue parlée / Language spoken / Idioma hablado : ", x, false);
+  x = option("Français", coche("langue","Français"), x);
+  x = option("English", coche("langue","English"), x);
+  x = option("Español", coche("langue","Español"), x);
+  champ("Autres / Other / Otros", v("langue_autre"), x, R - x);
+  suivante();
+  champ("Nom de l’employeur / Name of sponsor or employer / Nombre del empleador", v("employeur"), L, W);
+  y += 2;
+
+  /* Adresse */
+  barre("Adresse / Address / Dirección");
+  champ("Adresse complète / Complete address / Dirección completa", v("adresse"), L, W);
+  suivante();
+  champ("Ville / Town / Ciudad", v("ville"), L, 110);
+  champ("Code postal / Postal code / Código postal", v("code_postal"), 128, 76);
+  suivante();
+  champ("Téléphone / Phone number / Número de teléfono", v("tel"), L, W);
+  suivante();
+  champ("Téléphone en cas d’urgence / Emergency number / Número de emergencia", v("tel_urgence"), L, W);
+  suivante();
+  champ("Courriel / E-mail / Correo electrónico", v("courriel"), L, W);
+  y += 2;
+
+  /* Famille */
+  barre("Famille / Family / Familia");
+  champ("Nom et prénom du parent 1 / Name and first name of parent 1 / Apellido y nombres del padre", v("p1"), L, W);
+  suivante();
+  champ("Nom et prénom du parent 2 / Name and first name of parent 2 / Apellido y nombres de la madre", v("p2"), L, W);
+  suivante();
+  champ("Années de scolarité complétées / Years of schooling completed / Años de escolaridad completados", v("scolarite"), L, W);
+  y += 4;
+
+  /* Autorisation trilingue */
+  const lh = 2.3;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+  const para = id => doc.splitTextToSize(document.getElementById(id).textContent.replace(/\s+/g, " ").trim(), W - 4);
+  const pFr = para("auto-fr"), pEn = para("auto-en"), pEs = para("auto-es");
+  const hBoite = 8 + (pFr.length + pEn.length + pEs.length) * lh + 2 * 1 + 2;
+  doc.setLineWidth(0.4); doc.rect(L, y, W, hBoite);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+  doc.text("Autorisation / Permission / Permiso", L + W / 2, y + 3.6, { align:"center" });
+  doc.setLineWidth(0.3); doc.line(L, y + 5, R, y + 5);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+  let yp = y + 8;
+  [pFr, pEn, pEs].forEach(p => { doc.text(p, L + 2, yp); yp += p.length * lh + 1; });
+  y += hBoite + 13;
+
+  /* Signature et date */
+  txt("Signature / Firma :", L, true);
+  doc.setLineWidth(0.2); doc.line(L + 34, y + 1, L + 112, y + 1);
+  const sig = imageSignature();
+  const s = Math.min(70 / sig.w, 12 / sig.h);
+  const iw = sig.w * s, ih = sig.h * s;
+  doc.addImage(sig.data, "PNG", L + 36 + (70 - iw) / 2, y + 0.5 - ih, iw, ih);
+  champ("Date / Fecha", v("date_sign").replace(/-/g, " / "), 130, 74, true);
+
+  /* Réservé à l'administration */
+  y += 5;
+  const yAdmin = y, hAdmin = 52;
+  doc.setFillColor(217, 217, 217); doc.rect(L, yAdmin, W, hAdmin, "F");
+  doc.setFillColor(170, 170, 170); doc.rect(L, yAdmin, W, 5, "F");
+  doc.setLineWidth(0.5); doc.line(L, yAdmin, R, yAdmin); doc.line(L, yAdmin + 5, R, yAdmin + 5);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+  doc.text("RÉSERVÉE À L’ADMINISTRATION / RESERVED FOR ADMINISTRATION / RESERVADO PARA LA ADMINISTRACIÓN",
+    L + W / 2, yAdmin + 3.5, { align:"center" });
+
+  y = yAdmin + 10;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8.5);
+  const titrePreuve = "Preuve de la résidence de l’élève au Québec";
+  doc.text(titrePreuve, L + 2, y);
+  doc.setLineWidth(0.2); doc.line(L + 2, y + 0.8, L + 2 + doc.getTextWidth(titrePreuve), y + 0.8);
+  y += 4.5;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+  doc.text("J’atteste avoir pris connaissance des documents originaux suivants, présentés pour confirmer la résidence de l’élève au Québec :", L + 2, y);
+  y += 5.5;
+  let xa = L + 2;
+  xa += txt("Carte d’assurance maladie ", xa, false);
+  caseCochee(xa, false); xa += 3.2 + 6;
+  xa += txt("Permis de conduire ", xa, false);
+  caseCochee(xa, false); xa += 3.2 + 8;
+  champ("Autre, spécifiez", "", xa, R - 2 - xa);
+  y += 5.5;
+  champ("Date", "", L + 2, 56, true);
+  champ("Signature", "", L + 64, R - 2 - (L + 64), true);
+
+  y += 6.5;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8.5);
+  doc.text("Documents reçus :", L + 2, y);
+  y += 5.5;
+  const sauts = 5;
+  function ligneCases(items) {
+    let xl = L + 2;
+    items.forEach(t => { xl = option(t, false, xl, 5); });
+    y += sauts + 0.5;
+  }
+  ligneCases(["CC/RP", "Certificat de naissance", "Passeport", "Permis de travail/études", "CAQ"]);
+  ligneCases(["NAS", "Spécimen de chèque", "Frais de garde"]);
+  ligneCases(["Permis de travail ouvert", "Permis de travail du conjoint(e)"]);
+
+  /* Logo du bas : sous le bloc administratif, sans dépasser la page */
+  const logoY = yAdmin + hAdmin + 2;
+  placer(logoBas, R - 70, logoY, 70, Math.min(17, 277 - logoY), true);
+
+  return doc;
+}
+
+/* ===== Envoi ===== */
+function champsManquants(form) {
+  const manquants = [];
+  const vus = new Set();
+  form.querySelectorAll("[required]").forEach(el => {
+    if (el.type === "radio") {
+      if (vus.has(el.name)) return;
+      vus.add(el.name);
+      if (!form.querySelector('[name="' + el.name + '"]:checked')) {
+        const groupe = el.closest(".groupe");
+        manquants.push(groupe ? groupe.querySelector("span").firstChild.textContent.trim() : el.name);
+      }
+    } else if (!el.value.trim()) {
+      const lib = el.closest("label");
+      manquants.push(lib ? lib.firstChild.textContent.trim() : el.name);
+    }
+  });
+  return manquants;
+}
+
+document.getElementById("f").addEventListener("submit", async e => {
+  e.preventDefault();
+  const form = e.target;
+
+  if (!window.jspdf) {
+    afficher("La bibliothèque PDF ne s'est pas chargée. Vérifiez la connexion Internet et rechargez la page.", "erreur");
+    msg.scrollIntoView({behavior:"smooth", block:"center"});
+    return;
+  }
+
+  const manquants = champsManquants(form);
+  if (!signe) manquants.push("Signature / Firma");
+  const invalides = formatsInvalides(form);
+  if (manquants.length || invalides.length) {
+    let texte = "";
+    if (manquants.length) texte += "Il manque / Missing / Falta : " + manquants.join(" ; ") + ". ";
+    if (invalides.length) texte += "Format à corriger : " + invalides.join(" ; ") + ".";
+    afficher(texte.trim(), "erreur");
+    msg.scrollIntoView({behavior:"smooth", block:"center"});
+    return;
+  }
+
+  /* Copie lancée tout de suite, pendant le geste de l'élève */
+  const copie = copierAdresse();
+
+  try {
+    const doc = construirePDF(form);
+    const nom = "Inscription-Francisation-" + ANNEE + "-" + nettoyer(form.elements.nom.value) + "-" + nettoyer(form.elements.prenom.value) + ".pdf";
+    const blob = doc.output("blob");
+    const fichier = new File([blob], nom, { type:"application/pdf" });
+
+    let resultat = "";
+    if (navigator.canShare && navigator.canShare({ files:[fichier] })) {
+      try {
+        await navigator.share({
+          files:[fichier],
+          title:"Inscription Francisation " + ANNEE,
+          text:"Formulaire d'inscription (Francisation) de " + form.elements.prenom.value + " " + form.elements.nom.value
+        });
+        resultat = "partage";
+      } catch (err) {
+        if (err.name !== "AbortError") { doc.save(nom); resultat = "telechargement"; }
+        else { resultat = "annule"; }
+      }
+    } else {
+      doc.save(nom);
+      resultat = "telechargement";
+    }
+
+    const copieOk = await copie;
+    const consigneAdresse = copieOk
+      ? "L'adresse de destination est copiée : dans la case « À » de votre courriel, appuyez longuement, puis « Coller »."
+      : "Écrivez l'adresse de destination dans la case « À » : " + COURRIEL_DESTINATAIRE;
+
+    if (resultat === "partage") {
+      afficher("Fichier prêt. " + consigneAdresse, "ok");
+    } else if (resultat === "telechargement") {
+      afficher("Le PDF a été téléchargé. Joignez-le à un nouveau courriel. " + consigneAdresse, "ok");
+    } else {
+      afficher("Envoi annulé. Appuyez de nouveau sur le bouton jaune pour recommencer.", "erreur");
+    }
+    msg.scrollIntoView({behavior:"smooth", block:"center"});
+  } catch (err) {
+    afficher("Erreur lors de la création du PDF : " + err.message, "erreur");
+    msg.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+});
+</script>
+</body>
+</html>

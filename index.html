@@ -18,7 +18,7 @@
   legend { background:var(--gris); width:100%; padding:8px 10px; font-weight:bold; }
   label.champ { display:block; margin:12px 0 0; font-size:.95rem; }
   input[type=text], input[type=email], input[type=tel], input[type=date], select {
-    width:100%; padding:12px; font-size:16px; border:1px solid #888; border-radius:6px; margin-top:4px; }
+    width:100%; padding:12px; font-size:16px; border:1px solid #888; border-radius:6px; margin-top:4px; background:#fff; }
   .groupe { margin:12px 0 0; }
   .groupe > span { display:block; font-size:.95rem; margin-bottom:4px; }
   .option { display:inline-flex; align-items:center; min-height:44px; margin:0 14px 0 0; }
@@ -29,6 +29,7 @@
   button { font-size:1rem; padding:14px; border-radius:8px; border:0; cursor:pointer; }
   .principal { background:var(--jaune); font-weight:bold; width:100%; margin-top:14px; }
   .secondaire { background:var(--gris); margin-top:6px; }
+  .test { background:#c00000; color:#fff; font-weight:bold; width:100%; margin:0 0 14px; display:none; }
   .envoi { border:2px solid var(--jaune); background:#fffbe6; border-radius:8px; padding:12px 14px; margin-top:6px; }
   .envoi h2 { font-size:1.05rem; margin:0 0 8px; }
   .envoi ol { margin:0 0 10px; padding-left:22px; line-height:1.5; font-size:.95rem; }
@@ -41,11 +42,27 @@
 </head>
 <body>
 <main>
-<h1>Formation générale<br>Formulaire d'inscription 2026-2027</h1>
-<p class="consigne">Remplissez le formulaire, signez avec le doigt, puis suivez les étapes d'envoi au bas de la page.</p>
+<h1 id="titre">Inscription<br>Formulaire d'inscription 2026-2027</h1>
+<p class="consigne">Choisissez votre service, remplissez le formulaire, signez avec le doigt, puis suivez les étapes d'envoi au bas de la page.</p>
 <p class="legende-oblig"><span class="req">*</span> Champ obligatoire</p>
 
+<button type="button" class="test" id="test">MODE TEST : remplir au hasard</button>
+
 <form id="f" novalidate>
+
+<fieldset>
+<legend>Service</legend>
+<label class="champ">Service d'inscription
+  <select name="service" id="service" required>
+    <option value="">Choisir…</option>
+    <option value="generale">Formation générale</option>
+    <option value="continue">Formation continue</option>
+    <option value="semi">Semi-spécialisé</option>
+    <option value="socioprofessionnelle">Intégration socioprofessionnelle</option>
+    <option value="sociale">Intégration sociale</option>
+  </select>
+</label>
+</fieldset>
 
 <fieldset>
 <legend>Identification de l'élève</legend>
@@ -139,6 +156,37 @@ const ANNEE = "2026-2027";
 /* Logos (facultatifs) : nom de fichier placé à côté de la page, ou texte "data:image/png;base64,..." */
 const LOGO_HAUT = "logo-cfga.png";
 const LOGO_BAS = "logo-css.png";
+
+/* ===== Services : titre et contenu de l'encadré en haut à droite du PDF =====
+   Une chaîne = une ligne vide à remplir à la main.
+   { cases:[...] } = une ligne de cases à cocher. */
+const SERVICES = {
+  generale: { nom: "Formation générale", entete: ["# Fiche"] },
+  continue: { nom: "Formation continue", entete: [
+    { cases: ["Goyer", "PFE", "Externe"] },
+    "Numéro de fiche", "Clé flexible", "Date de début", "Montant" ] },
+  semi: { nom: "Semi-spécialisé", entete: [
+    "Numéro de fiche", "Formateur", "Date de début", "Entreprise", "Programme" ] },
+  socioprofessionnelle: { nom: "Intégration socioprofessionnelle", entete: [
+    "Numéro de fiche", "Clé flexible", "Date de début", "Montant" ] },
+  sociale: { nom: "Intégration sociale", entete: [
+    "Numéro de fiche", "Clé flexible", "Date de début", "Montant" ] }
+};
+
+/* ===== Service choisi : titre de la page ===== */
+const selService = document.getElementById("service");
+function appliquerService() {
+  const s = SERVICES[selService.value];
+  document.getElementById("titre").innerHTML =
+    (s ? s.nom : "Inscription") + "<br>Formulaire d'inscription " + ANNEE;
+  document.title = (s ? s.nom + " : " : "") + "Formulaire d'inscription " + ANNEE;
+}
+selService.addEventListener("change", appliquerService);
+(function () {
+  const p = new URLSearchParams(location.search).get("service");
+  if (p && SERVICES[p]) selService.value = p;
+  appliquerService();
+})();
 
 /* ===== Affichage de l'adresse de destination ===== */
 document.querySelectorAll(".adresse-dest").forEach(e => { e.textContent = COURRIEL_DESTINATAIRE; });
@@ -295,13 +343,85 @@ function nettoyer(s) {
   return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-|-$/g,"");
 }
 
-/* ===== Construction du PDF (mise en page proche du formulaire officiel) ===== */
+/* ===== Mode test : visible seulement si l'adresse se termine par ?test ===== */
+(function () {
+  if (!/[?&]test\b/.test(location.search)) return;
+  const bouton = document.getElementById("test");
+  bouton.style.display = "block";
+
+  const hasard = t => t[Math.floor(Math.random() * t.length)];
+  const nombre = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+  const chiffres = n => Array.from({ length: n }, () => nombre(0, 9)).join("");
+  const lettre = () => String.fromCharCode(65 + nombre(0, 25));
+  const deux = n => String(n).padStart(2, "0");
+  const tel = () => "418 " + nombre(200, 999) + "-" + chiffres(4);
+
+  function remplirTest() {
+    const f = document.getElementById("f").elements;
+    const radio = (nom, valeur) => {
+      document.querySelector('[name="' + nom + '"][value="' + valeur + '"]').checked = true;
+    };
+    const noms = ["Tremblay", "Gagnon", "Bouchard", "Gauthier", "Côté", "Lavoie", "Fortin", "Girard"];
+    const prenoms = ["Émile", "Léa", "Mathis", "Camille", "Noémie", "Xavier", "Élodie", "Samuel"];
+
+    /* Le service change à chaque clic, pour tester tous les entêtes */
+    f.service.value = hasard(Object.keys(SERVICES));
+    appliquerService();
+
+    f.nom.value = hasard(noms);
+    f.prenom.value = hasard(prenoms);
+    radio("sexe", hasard(["F", "M", "Non binaire"]));
+    f.naissance.value = nombre(2000, 2008) + "-" + deux(nombre(1, 12)) + "-" + deux(nombre(1, 28));
+    f.lieu.value = hasard(["Alma", "Saguenay", "Dolbeau-Mistassini", "Roberval", "Saint-Félicien"]);
+    radio("langue", "Français");
+    f.langue_precision.value = "";
+    radio("repondant", hasard(["Parents", "Parent 1", "Parent 2"]));
+    f.repondant_autre.value = "";
+
+    f.no_civique.value = nombre(1, 999);
+    f.app.value = Math.random() < 0.5 ? String(nombre(1, 12)) : "";
+    f.rue.value = hasard(["rue Sacré-Coeur Ouest", "avenue du Pont Sud", "rue Collard Ouest", "boulevard Auger Ouest"]);
+    f.municipalite.value = hasard(["Alma", "Saint-Bruno", "Delisle", "Métabetchouan–Lac-à-la-Croix"]);
+    f.province.value = "Québec";
+    f.code_postal.value = "G" + nombre(0, 9) + lettre() + " " + nombre(0, 9) + lettre() + nombre(0, 9);
+    f.tel_residence.value = tel();
+    f.cellulaire.value = tel();
+    f.tel_autre.value = tel();
+    f.courriel.value = "test" + nombre(100, 999) + "@exemple.com";
+    radio("transport", hasard(["Oui", "Non"]));
+
+    f.p1_nom.value = f.nom.value;
+    f.p1_prenom.value = hasard(prenoms);
+    f.p2_nom.value = f.nom.value;
+    f.p2_prenom.value = hasard(prenoms);
+
+    /* Signature factice */
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    bx0 = 1e9; by0 = 1e9; bx1 = -1; by1 = -1;
+    ctx.beginPath();
+    let px = 80, py = 130;
+    ctx.moveTo(px, py); suivre({ x: px, y: py });
+    for (let i = 1; i <= 40; i++) {
+      px = 80 + i * 12;
+      py = 120 + Math.sin(i / 2) * 40 + nombre(-10, 10);
+      ctx.lineTo(px, py); suivre({ x: px, y: py });
+    }
+    ctx.stroke();
+    signe = true;
+
+    afficher("Données de test insérées (" + SERVICES[f.service.value].nom + "). Appuyez sur « Générer le PDF et l'envoyer ».", "ok");
+  }
+  bouton.addEventListener("click", remplirTest);
+})();
+
+/* ===== Construction du PDF ===== */
 function construirePDF(form) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:"mm", format:"letter" });
   const v = n => (form.elements[n] && form.elements[n].value || "").trim();
   const choix = n => [...form.querySelectorAll('[name="' + n + '"]:checked')].map(e => e.value);
   const coche = (n, val) => choix(n).includes(val);
+  const service = SERVICES[v("service")];
 
   const L = 12, R = 204, W = 192, FS = 9, LIGNE = 6.8;
   let y = 28;
@@ -357,15 +477,44 @@ function construirePDF(form) {
     try { doc.addImage(img.data, "PNG", droite ? x + maxW - w : x, yy, w, h); } catch (e) {}
   }
 
-  /* En-tête */
+  /* En-tête : logo, titre du service, encadré */
   placer(logoHaut, L, 8, 44, 19, false);
   doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
-  doc.text("Formation générale", 108, 13, { align:"center" });
+  doc.text(service.nom, 108, 13, { align:"center" });
   doc.text("Formulaire d'inscription", 108, 18, { align:"center" });
   doc.text(ANNEE, 108, 23, { align:"center" });
-  doc.setLineWidth(0.3); doc.rect(152, 8, 52, 13);
-  doc.setFontSize(8.5); doc.text("# Fiche :", 154, 16);
-  doc.setLineWidth(0.2); doc.line(170, 17, 202, 17);
+
+  const lignes = service.entete;
+  const n = lignes.length;
+  let basEncadre;
+  if (n === 1) {
+    doc.setLineWidth(0.3); doc.rect(152, 8, 52, 13);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.text(lignes[0] + " :", 154, 16);
+    doc.setLineWidth(0.2); doc.line(170, 17, 202, 17);
+    basEncadre = 21;
+  } else {
+    const haut = 6, hl = 4.6, hauteur = n * hl + 3;
+    doc.setLineWidth(0.3); doc.rect(152, haut, 52, hauteur);
+    lignes.forEach((ligne, i) => {
+      const base = haut + 1.5 + (i + 1) * hl - 1.2;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+      if (typeof ligne === "string") {
+        const lw = doc.getTextWidth(ligne + " : ");
+        doc.text(ligne + " :", 154, base);
+        doc.setLineWidth(0.2); doc.line(154 + lw, base + 0.8, 202, base + 0.8);
+      } else {
+        let xc = 154;
+        ligne.cases.forEach(nom => {
+          doc.text(nom, xc, base);
+          const lw = doc.getTextWidth(nom + " ");
+          doc.setLineWidth(0.25); doc.rect(xc + lw, base - 2.6, 2.8, 2.8);
+          xc += lw + 2.8 + 3.5;
+        });
+      }
+    });
+    basEncadre = haut + hauteur;
+  }
+  y = Math.max(28, basEncadre - 1);
 
   /* Identification */
   barre("Identification de l'élève");
@@ -453,7 +602,7 @@ function construirePDF(form) {
   doc.addImage(sig.data, "PNG", L + 46 + (64 - iw) / 2, y + 0.5 - ih, iw, ih);
   champ("Date", v("date_sign").replace(/-/g, " / "), 130, 74, true);
 
-  /* Réservé à l'administration (texte fixe, jamais affiché dans la page) */
+  /* Réservé à l'administration */
   y += 6;
   const yAdmin = y;
   doc.setFillColor(217, 217, 217); doc.rect(L, yAdmin, W, 64, "F");
@@ -470,8 +619,8 @@ function construirePDF(form) {
     doc.line(L + 2, y + 0.8, L + 2 + doc.getTextWidth(titre), y + 0.8);
     y += 4.5;
     doc.setFont("helvetica", "normal"); doc.setFontSize(8);
-    const lignes = doc.splitTextToSize(texte, W - 4);
-    doc.text(lignes, L + 2, y);
+    const lignesTexte = doc.splitTextToSize(texte, W - 4);
+    doc.text(lignesTexte, L + 2, y);
     y += 9.8;
     let xa = L + 2;
     xa += txt("Carte d’assurance maladie ", xa, false);
@@ -490,7 +639,7 @@ function construirePDF(form) {
     "J’atteste avoir pris connaissance des documents originaux suivants, présentés pour confirmer la résidence du parent, du répondant ou du conjoint de l’élève au Québec :");
 
   /* Logo du bas */
-  placer(logoBas, R - 70, 262, 70, 20, true);
+  placer(logoBas, R - 70, 256, 70, 20, true);
 
   return doc;
 }
@@ -542,7 +691,8 @@ document.getElementById("f").addEventListener("submit", async e => {
 
   try {
     const doc = construirePDF(form);
-    const nom = "Inscription-" + ANNEE + "-" + nettoyer(form.elements.nom.value) + "-" + nettoyer(form.elements.prenom.value) + ".pdf";
+    const nomService = SERVICES[form.elements.service.value].nom;
+    const nom = "Inscription-" + nettoyer(nomService) + "-" + ANNEE + "-" + nettoyer(form.elements.nom.value) + "-" + nettoyer(form.elements.prenom.value) + ".pdf";
     const blob = doc.output("blob");
     const fichier = new File([blob], nom, { type:"application/pdf" });
 
@@ -551,8 +701,8 @@ document.getElementById("f").addEventListener("submit", async e => {
       try {
         await navigator.share({
           files:[fichier],
-          title:"Inscription " + ANNEE,
-          text:"Formulaire d'inscription de " + form.elements.prenom.value + " " + form.elements.nom.value
+          title:"Inscription " + nomService + " " + ANNEE,
+          text:"Formulaire d'inscription (" + nomService + ") de " + form.elements.prenom.value + " " + form.elements.nom.value
         });
         resultat = "partage";
       } catch (err) {

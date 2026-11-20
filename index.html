@@ -8,6 +8,7 @@
 <style>
   :root { --jaune:#f0c419; --gris:#d9d9d9; --texte:#222; --rouge:#c00000; }
   * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
   body { font-family:Arial,Helvetica,sans-serif; color:var(--texte); margin:0; background:#f4f4f4; font-size:17px; }
   main { max-width:680px; margin:0 auto; padding:12px; background:#fff; }
   h1 { font-size:1.3rem; text-align:center; margin:8px 0 8px; }
@@ -24,6 +25,7 @@
   .option { display:inline-flex; align-items:center; min-height:44px; margin:0 14px 0 0; }
   .option input { width:24px; height:24px; margin:0 8px 0 0; }
   .ligne2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .note { font-size:.85rem; margin:6px 0 0; }
   .autorisation { font-size:.8rem; line-height:1.35; border:1px solid #888; padding:10px; margin-top:6px; }
   canvas { width:100%; aspect-ratio:640/240; height:auto; border:2px dashed #888; border-radius:6px; background:#fff; touch-action:none; display:block; }
   button { font-size:1rem; padding:14px; border-radius:8px; border:0; cursor:pointer; }
@@ -82,13 +84,14 @@
   <label class="option"><input type="radio" name="langue" value="Autre">Autre</label>
 </div>
 <label class="champ">Si autre, précisez<input type="text" name="langue_precision"></label>
-<div class="groupe"><span>Répondant (pour les moins de 18 ans)</span>
-  <label class="option"><input type="radio" name="repondant" value="Parents">Parents</label>
+<div class="groupe"><span>Personne répondante (si l'élève a moins de 18 ans)</span>
+  <label class="option"><input type="radio" name="repondant" value="Parents">Les deux parents</label>
   <label class="option"><input type="radio" name="repondant" value="Parent 1">Parent 1</label>
   <label class="option"><input type="radio" name="repondant" value="Parent 2">Parent 2</label>
-  <label class="option"><input type="radio" name="repondant" value="Autre">Autre</label>
+  <label class="option"><input type="radio" name="repondant" value="Autre">Autre personne</label>
 </div>
-<label class="champ">Si autre, précisez<input type="text" name="repondant_autre"></label>
+<label class="champ" id="rep-autre" hidden>Nom et lien avec l'élève (tuteur, famille d'accueil, etc.)<input type="text" name="repondant_autre"></label>
+<p class="note">Si vous avez 18 ans ou plus, laissez cette section vide.</p>
 </fieldset>
 
 <fieldset>
@@ -115,10 +118,14 @@
 
 <fieldset>
 <legend>Parents</legend>
-<label class="champ">Nom du parent 1<input type="text" name="p1_nom"></label>
-<label class="champ">Prénom du parent 1<input type="text" name="p1_prenom"></label>
-<label class="champ">Nom du parent 2<input type="text" name="p2_nom"></label>
-<label class="champ">Prénom du parent 2<input type="text" name="p2_prenom"></label>
+<div id="bloc-p1">
+  <label class="champ">Nom du parent 1<input type="text" name="p1_nom"></label>
+  <label class="champ">Prénom du parent 1<input type="text" name="p1_prenom"></label>
+</div>
+<div id="bloc-p2">
+  <label class="champ">Nom du parent 2<input type="text" name="p2_nom"></label>
+  <label class="champ">Prénom du parent 2<input type="text" name="p2_prenom"></label>
+</div>
 </fieldset>
 
 <fieldset id="section-scolaire" hidden>
@@ -230,6 +237,20 @@ window.addEventListener("pageshow", () => {
   if (p && SERVICES[p]) selService.value = p;
   appliquerService();
 })();
+
+/* ===== Répondant : adapte le champ « autre personne » et la section Parents =====
+   Les deux parents ou aucun choix : parents 1 et 2 affichés.
+   Parent 1 : seulement le parent 1. Parent 2 : seulement le parent 2.
+   Autre personne : champ de précision affiché, parents 1 et 2 affichés. */
+function majRepondant() {
+  const coche = document.querySelector('[name="repondant"]:checked');
+  const val = coche ? coche.value : "";
+  document.getElementById("rep-autre").hidden = val !== "Autre";
+  document.getElementById("bloc-p1").hidden = val === "Parent 2";
+  document.getElementById("bloc-p2").hidden = val === "Parent 1";
+}
+document.querySelectorAll('[name="repondant"]').forEach(r => r.addEventListener("change", majRepondant));
+majRepondant();
 
 /* ===== Affichage de l'adresse de destination ===== */
 document.querySelectorAll(".adresse-dest").forEach(e => { e.textContent = COURRIEL_DESTINATAIRE; });
@@ -402,13 +423,18 @@ function nettoyer(s) {
   function remplirTest() {
     const f = document.getElementById("f").elements;
     const radio = (nom, valeur) => {
-      document.querySelector('[name="' + nom + '"][value="' + valeur + '"]').checked = true;
+      const r = document.querySelector('[name="' + nom + '"][value="' + valeur + '"]');
+      r.checked = true;
+      r.dispatchEvent(new Event("change", { bubbles: true }));
     };
     const noms = ["Tremblay", "Gagnon", "Bouchard", "Gauthier", "Côté", "Lavoie", "Fortin", "Girard"];
     const prenoms = ["Émile", "Léa", "Mathis", "Camille", "Noémie", "Xavier", "Élodie", "Samuel"];
 
-    /* Le service change à chaque clic (Francisation exclue, elle a sa page) */
-    f.service.value = hasard(Object.keys(SERVICES));
+    /* Si un service est déjà choisi dans le menu, il est conservé.
+       Sinon, un service est tiré au hasard (Francisation exclue, elle a sa page). */
+    if (!f.service.value || f.service.value === "francisation") {
+      f.service.value = hasard(Object.keys(SERVICES));
+    }
     appliquerService();
 
     f.nom.value = hasard(noms);
@@ -467,7 +493,12 @@ function nettoyer(s) {
 function construirePDF(form) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:"mm", format:"letter" });
-  const v = n => (form.elements[n] && form.elements[n].value || "").trim();
+  /* Un champ masqué à l'écran reste vide dans le PDF */
+  const v = n => {
+    const el = form.elements[n];
+    if (!el || el.closest("[hidden]")) return "";
+    return (el.value || "").trim();
+  };
   const choix = n => [...form.querySelectorAll('[name="' + n + '"]:checked')].map(e => e.value);
   const coche = (n, val) => choix(n).includes(val);
   const service = SERVICES[v("service")];
@@ -616,7 +647,7 @@ function construirePDF(form) {
   option("Non", coche("transport","Non"), x);
   suivante();
 
-  /* Parents */
+  /* Parents (les champs masqués restent vides) */
   barre("Parents");
   champ("Nom du parent 1", v("p1_nom"), L, 92);
   champ("Prénom du parent 1", v("p1_prenom"), 108, 96);

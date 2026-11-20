@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Formulaire d'inscription 2026-2027</title>
+<title>Formulaire d'inscription</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root { --jaune:#f0c419; --gris:#d9d9d9; --texte:#222; --rouge:#c00000; }
@@ -42,7 +42,7 @@
 </head>
 <body>
 <main>
-<h1 id="titre">Inscription<br>Formulaire d'inscription 2026-2027</h1>
+<h1 id="titre">Inscription<br>Formulaire d'inscription</h1>
 <p class="consigne">Choisissez votre service, remplissez le formulaire, signez avec le doigt, puis suivez les étapes d'envoi au bas de la page.</p>
 <p class="legende-oblig"><span class="req">*</span> Champ obligatoire</p>
 
@@ -52,7 +52,7 @@
 
 <fieldset>
 <legend>Services</legend>
-<label class="champ">Choisissez votre service d'inscription
+<label class="champ">Service d'inscription
   <select name="service" id="service" required>
     <option value="">Choisir…</option>
     <option value="generale">Formation générale</option>
@@ -60,6 +60,7 @@
     <option value="semi">Semi-spécialisé</option>
     <option value="socioprofessionnelle">Intégration socioprofessionnelle</option>
     <option value="sociale">Intégration sociale</option>
+    <option value="preinscription">Préinscription</option>
     <option value="francisation">Francisation</option>
   </select>
 </label>
@@ -120,6 +121,25 @@
 <label class="champ">Prénom du parent 2<input type="text" name="p2_prenom"></label>
 </fieldset>
 
+<fieldset id="section-scolaire" hidden>
+<legend>Situation scolaire actuelle</legend>
+<label class="champ">École actuelle<input type="text" name="ecole" required></label>
+<div class="groupe"><span>Objectif visé</span>
+  <label class="option"><input type="radio" name="objectif" value="DES" required>DES</label>
+  <label class="option"><input type="radio" name="objectif" value="DEP">DEP</label>
+  <label class="option"><input type="radio" name="objectif" value="CÉGEP">CÉGEP</label>
+  <label class="option"><input type="radio" name="objectif" value="À déterminer">À déterminer</label>
+</div>
+<div class="groupe"><span>Avez-vous actuellement une mesure adaptative ?</span>
+  <label class="option"><input type="radio" name="mesure" value="Oui" required>Oui</label>
+  <label class="option"><input type="radio" name="mesure" value="Non">Non</label>
+</div>
+<div class="groupe"><span>Avez-vous actuellement un plan d'intervention (PI) ?</span>
+  <label class="option"><input type="radio" name="pi" value="Oui" required>Oui</label>
+  <label class="option"><input type="radio" name="pi" value="Non">Non</label>
+</div>
+</fieldset>
+
 <fieldset>
 <legend>Autorisation</legend>
 <div class="autorisation" id="texte-auto">
@@ -154,6 +174,9 @@ J’atteste que tous ces renseignements sont exacts. J’autorise la divulgation
 /* ===== Réglages à modifier ===== */
 const COURRIEL_DESTINATAIRE = "sabrina.raymond@cslsj.qc.ca";
 const ANNEE = "2026-2027";
+/* Année de la préinscription : calculée à partir de ANNEE (rien d'autre à changer chaque année) */
+const _a = parseInt(ANNEE, 10);
+const ANNEE_SUIVANTE = (_a + 1) + "-" + (_a + 2);
 /* Logos (facultatifs) : nom de fichier placé à côté de la page, ou texte "data:image/png;base64,..." */
 const LOGO_HAUT = "logo-cfga.png";
 const LOGO_BAS = "logo-css.png";
@@ -161,6 +184,7 @@ const LOGO_BAS = "logo-css.png";
 /* ===== Services : titre et contenu de l'encadré en haut à droite du PDF =====
    Une chaîne = une ligne vide à remplir à la main.
    { cases:[...] } = une ligne de cases à cocher.
+   annee = année affichée si différente de ANNEE.
    Francisation n'est pas ici : elle a sa propre page (francisation.html). */
 const SERVICES = {
   generale: { nom: "Formation générale", entete: ["# Fiche"] },
@@ -172,21 +196,25 @@ const SERVICES = {
   socioprofessionnelle: { nom: "Intégration socioprofessionnelle", entete: [
     "Numéro de fiche", "Clé flexible", "Date de début", "Montant" ] },
   sociale: { nom: "Intégration sociale", entete: [
-    "Numéro de fiche", "Clé flexible", "Date de début", "Montant" ] }
+    "Numéro de fiche", "Clé flexible", "Date de début", "Montant" ] },
+  preinscription: { nom: "Préinscription", entete: ["# Fiche"], annee: ANNEE_SUIVANTE }
 };
+function anneeService(s) { return (s && s.annee) || ANNEE; }
 
 /* ===== Redirection vers la page Francisation (conserve ?test) ===== */
 function versFrancisation() {
   location.href = "francisation.html" + (/[?&]test\b/.test(location.search) ? "?test" : "");
 }
 
-/* ===== Service choisi : titre de la page ===== */
+/* ===== Service choisi : titre de la page et section de préinscription ===== */
 const selService = document.getElementById("service");
+document.querySelector('#service option[value="preinscription"]').textContent = "Préinscription " + ANNEE_SUIVANTE;
 function appliquerService() {
   const s = SERVICES[selService.value];
   document.getElementById("titre").innerHTML =
-    (s ? s.nom : "Inscription") + "<br>Formulaire d'inscription " + ANNEE;
-  document.title = (s ? s.nom + " : " : "") + "Formulaire d'inscription " + ANNEE;
+    (s ? s.nom : "Inscription") + "<br>Formulaire d'inscription " + anneeService(s);
+  document.title = (s ? s.nom + " : " : "") + "Formulaire d'inscription " + anneeService(s);
+  document.getElementById("section-scolaire").hidden = selService.value !== "preinscription";
 }
 selService.addEventListener("change", () => {
   if (selService.value === "francisation") { versFrancisation(); return; }
@@ -410,6 +438,12 @@ function nettoyer(s) {
     f.p2_nom.value = f.nom.value;
     f.p2_prenom.value = hasard(prenoms);
 
+    /* Situation scolaire (utilisée seulement par la préinscription) */
+    f.ecole.value = hasard(["École secondaire Séminaire Marguerite-Bourgeoys", "Polyvalente de l'Ancre", "École Camille-Lavoie", "Polyvalente des Quatre-Vents"]);
+    radio("objectif", hasard(["DES", "DEP", "CÉGEP", "À déterminer"]));
+    radio("mesure", hasard(["Oui", "Non"]));
+    radio("pi", hasard(["Oui", "Non"]));
+
     /* Signature factice */
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     bx0 = 1e9; by0 = 1e9; bx1 = -1; by1 = -1;
@@ -437,8 +471,10 @@ function construirePDF(form) {
   const choix = n => [...form.querySelectorAll('[name="' + n + '"]:checked')].map(e => e.value);
   const coche = (n, val) => choix(n).includes(val);
   const service = SERVICES[v("service")];
+  /* Préinscription : section supplémentaire, donc espacement resserré pour tenir sur une page */
+  const compact = v("service") === "preinscription";
 
-  const L = 12, R = 204, W = 192, FS = 9, LIGNE = 6.8;
+  const L = 12, R = 204, W = 192, FS = 9, LIGNE = compact ? 5.5 : 6.8;
   let y = 28;
 
   function txt(t, x, gras) {
@@ -478,11 +514,11 @@ function construirePDF(form) {
     return x + lw + 3.2 + (ecart === undefined ? 3 : ecart);
   }
   function barre(titre) {
-    y += 2.5;
+    y += compact ? 2 : 2.5;
     doc.setFillColor(205, 205, 205); doc.rect(L, y, W, 5, "F");
     doc.setLineWidth(0.6); doc.line(L, y, R, y); doc.line(L, y + 5, R, y + 5);
     doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.text(titre, L + 5, y + 3.6);
-    y += 5 + 5.5;
+    y += 5 + (compact ? 5 : 5.5);
   }
   function suivante() { y += LIGNE; }
   function placer(img, x, yy, maxW, maxH, droite) {
@@ -497,7 +533,7 @@ function construirePDF(form) {
   doc.setFont("helvetica", "bold"); doc.setFontSize(10.5);
   doc.text(service.nom, 108, 13, { align:"center" });
   doc.text("Formulaire d'inscription", 108, 18, { align:"center" });
-  doc.text(ANNEE, 108, 23, { align:"center" });
+  doc.text(anneeService(service), 108, 23, { align:"center" });
 
   const lignes = service.entete;
   const n = lignes.length;
@@ -589,6 +625,28 @@ function construirePDF(form) {
   champ("Prénom du parent 2", v("p2_prenom"), 108, 96);
   suivante();
 
+  /* Situation scolaire actuelle (préinscription seulement) */
+  if (compact) {
+    barre("Situation scolaire actuelle");
+    champ("École actuelle", v("ecole"), L, W);
+    suivante();
+    x = L;
+    x += txt("Objectif visé : ", x, false);
+    x = option("DES", coche("objectif","DES"), x, 10);
+    x = option("DEP", coche("objectif","DEP"), x, 10);
+    x = option("CÉGEP", coche("objectif","CÉGEP"), x, 10);
+    option("À déterminer", coche("objectif","À déterminer"), x);
+    suivante();
+    x = L;
+    x += txt("Mesure adaptative actuelle : ", x, false);
+    x = option("Oui", coche("mesure","Oui"), x, 3);
+    x = option("Non", coche("mesure","Non"), x, 18);
+    x += txt("Plan d'intervention (PI) actuel : ", x, false);
+    x = option("Oui", coche("pi","Oui"), x, 3);
+    option("Non", coche("pi","Non"), x);
+    suivante();
+  }
+
   /* Autorisation */
   y -= 3;
   doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
@@ -608,7 +666,7 @@ function construirePDF(form) {
   y += hBoite + 3;
 
   /* Signature et date */
-  y += 20;
+  y += compact ? 15 : 20;
   txt("Signature de l'élève :", L, true);
   doc.setLineWidth(0.2); doc.line(L + 44, y + 1, L + 112, y + 1);
   const sig = imageSignature();
@@ -619,8 +677,8 @@ function construirePDF(form) {
 
   /* Réservé à l'administration */
   y += 6;
-  const yAdmin = y;
-  doc.setFillColor(217, 217, 217); doc.rect(L, yAdmin, W, 64, "F");
+  const yAdmin = y, hAdmin = compact ? 62 : 64;
+  doc.setFillColor(217, 217, 217); doc.rect(L, yAdmin, W, hAdmin, "F");
   doc.setFillColor(170, 170, 170); doc.rect(L, yAdmin, W, 5.5, "F");
   doc.setLineWidth(0.5); doc.line(L, yAdmin, R, yAdmin); doc.line(L, yAdmin + 5.5, R, yAdmin + 5.5);
   doc.setFont("helvetica", "bold"); doc.setFontSize(9);
@@ -654,7 +712,12 @@ function construirePDF(form) {
     "J’atteste avoir pris connaissance des documents originaux suivants, présentés pour confirmer la résidence du parent, du répondant ou du conjoint de l’élève au Québec :");
 
   /* Logo du bas */
-  placer(logoBas, R - 70, 256, 70, 20, true);
+  if (compact) {
+    const logoY = yAdmin + hAdmin + 2;
+    placer(logoBas, R - 70, logoY, 70, Math.min(20, 277 - logoY), true);
+  } else {
+    placer(logoBas, R - 70, 256, 70, 20, true);
+  }
 
   return doc;
 }
@@ -664,6 +727,7 @@ function champsManquants(form) {
   const manquants = [];
   const vus = new Set();
   form.querySelectorAll("[required]").forEach(el => {
+    if (el.closest("[hidden]")) return;
     if (el.type === "radio") {
       if (vus.has(el.name)) return;
       vus.add(el.name);
@@ -708,8 +772,10 @@ document.getElementById("f").addEventListener("submit", async e => {
 
   try {
     const doc = construirePDF(form);
-    const nomService = SERVICES[form.elements.service.value].nom;
-    const nom = "Inscription-" + nettoyer(nomService) + "-" + ANNEE + "-" + nettoyer(form.elements.nom.value) + "-" + nettoyer(form.elements.prenom.value) + ".pdf";
+    const svc = SERVICES[form.elements.service.value];
+    const nomService = svc.nom;
+    const anneeAff = anneeService(svc);
+    const nom = "Inscription-" + nettoyer(nomService) + "-" + anneeAff + "-" + nettoyer(form.elements.nom.value) + "-" + nettoyer(form.elements.prenom.value) + ".pdf";
     const blob = doc.output("blob");
     const fichier = new File([blob], nom, { type:"application/pdf" });
 
@@ -718,7 +784,7 @@ document.getElementById("f").addEventListener("submit", async e => {
       try {
         await navigator.share({
           files:[fichier],
-          title:"Inscription " + nomService + " " + ANNEE,
+          title:"Inscription " + nomService + " " + anneeAff,
           text:"Formulaire d'inscription (" + nomService + ") de " + form.elements.prenom.value + " " + form.elements.nom.value
         });
         resultat = "partage";

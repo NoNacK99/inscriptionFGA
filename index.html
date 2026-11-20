@@ -647,14 +647,19 @@ function construirePDF(form) {
   option("Non", coche("transport","Non"), x);
   suivante();
 
-  /* Parents (les champs masqués restent vides) */
+  /* Parents : seule la ligne du parent concerné est dessinée */
   barre("Parents");
-  champ("Nom du parent 1", v("p1_nom"), L, 92);
-  champ("Prénom du parent 1", v("p1_prenom"), 108, 96);
-  suivante();
-  champ("Nom du parent 2", v("p2_nom"), L, 92);
-  champ("Prénom du parent 2", v("p2_prenom"), 108, 96);
-  suivante();
+  const rep = choix("repondant")[0] || "";
+  if (rep !== "Parent 2") {
+    champ("Nom du parent 1", v("p1_nom"), L, 92);
+    champ("Prénom du parent 1", v("p1_prenom"), 108, 96);
+    suivante();
+  }
+  if (rep !== "Parent 1") {
+    champ("Nom du parent 2", v("p2_nom"), L, 92);
+    champ("Prénom du parent 2", v("p2_prenom"), 108, 96);
+    suivante();
+  }
 
   /* Situation scolaire actuelle (préinscription seulement) */
   if (compact) {

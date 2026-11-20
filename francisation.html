@@ -348,7 +348,7 @@ function nettoyer(s) {
   });
 })();
 
-/* ===== Construction du PDF ===== */
+/* ===== Construction du PDF (français seulement) ===== */
 function construirePDF(form) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:"mm", format:"letter" });
@@ -356,7 +356,7 @@ function construirePDF(form) {
   const choix = n => [...form.querySelectorAll('[name="' + n + '"]:checked')].map(e => e.value);
   const coche = (n, val) => choix(n).includes(val);
 
-  const L = 12, R = 204, W = 192, FS = 8, LIGNE = 5.5;
+  const L = 12, R = 204, W = 192, FS = 9, LIGNE = 6.8;
   let y = 36;
 
   function txt(t, x, gras) {
@@ -396,11 +396,11 @@ function construirePDF(form) {
     return x + lw + 3.2 + (ecart === undefined ? 3 : ecart);
   }
   function barre(titre) {
-    y += 2;
-    doc.setFillColor(205, 205, 205); doc.rect(L, y, W, 4.6, "F");
-    doc.setLineWidth(0.6); doc.line(L, y, R, y); doc.line(L, y + 4.6, R, y + 4.6);
-    doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.text(titre, L + 5, y + 3.3);
-    y += 9;
+    y += 2.5;
+    doc.setFillColor(205, 205, 205); doc.rect(L, y, W, 5, "F");
+    doc.setLineWidth(0.6); doc.line(L, y, R, y); doc.line(L, y + 5, R, y + 5);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.text(titre, L + 5, y + 3.6);
+    y += 5 + 5.5;
   }
   function suivante() { y += LIGNE; }
   function placer(img, x, yy, maxW, maxH, droite) {
@@ -444,87 +444,85 @@ function construirePDF(form) {
   y = Math.max(36, haut + hauteur + 1.8);
 
   /* Identification */
-  barre("Identification / Identificación");
-  champ("Nom / Last name / Apellido", v("nom"), L, 118);
-  let x = 134;
-  x += txt("Sexe / Sexo : ", x, false);
+  barre("Identification");
+  champ("Nom", v("nom"), L, 112);
+  let x = 128;
+  x += txt("Sexe : ", x, false);
   x = option("F", coche("sexe","F"), x);
   option("M", coche("sexe","M"), x);
   suivante();
-  champ("Prénom / First name / Nombres", v("prenom"), L, W);
+  champ("Prénom", v("prenom"), L, 112);
+  champ("Date de naissance", v("naissance").replace(/-/g, " / "), 128, 76);
   suivante();
-  champ("Date de naissance / Date of birth / Fecha de nacimiento", v("naissance").replace(/-/g, " / "), L, W);
-  suivante();
-  champ("Ville de naissance / City of birth / Lugar de nacimiento (ciudad)", v("lieu"), L, W);
+  champ("Ville de naissance", v("lieu"), L, 112);
   suivante();
   x = L;
-  x += txt("Langue parlée / Language spoken / Idioma hablado : ", x, false);
+  x += txt("Langue parlée : ", x, false);
   x = option("Français", coche("langue","Français"), x);
   x = option("English", coche("langue","English"), x);
   x = option("Español", coche("langue","Español"), x);
-  champ("Autres / Other / Otros", v("langue_autre"), x, R - x);
+  champ("Autres", v("langue_autre"), x, R - x);
   suivante();
-  champ("Nom de l’employeur / Name of sponsor or employer / Nombre del empleador", v("employeur"), L, W);
+  champ("Nom de l’employeur", v("employeur"), L, W);
+  suivante();
   y += 2;
 
   /* Adresse */
-  barre("Adresse / Address / Dirección");
-  champ("Adresse complète / Complete address / Dirección completa", v("adresse"), L, W);
+  barre("Adresse");
+  champ("Adresse complète", v("adresse"), L, W);
   suivante();
-  champ("Ville / Town / Ciudad", v("ville"), L, 110);
-  champ("Code postal / Postal code / Código postal", v("code_postal"), 128, 76);
+  champ("Ville", v("ville"), L, 110);
+  champ("Code postal", v("code_postal"), 128, 76);
   suivante();
-  champ("Téléphone / Phone number / Número de teléfono", v("tel"), L, W);
+  champ("Téléphone", v("tel"), L, 68);
+  champ("Téléphone en cas d’urgence", v("tel_urgence"), 84, 120);
   suivante();
-  champ("Téléphone en cas d’urgence / Emergency number / Número de emergencia", v("tel_urgence"), L, W);
+  champ("Courriel", v("courriel"), L, W);
   suivante();
-  champ("Courriel / E-mail / Correo electrónico", v("courriel"), L, W);
   y += 2;
 
   /* Famille */
-  barre("Famille / Family / Familia");
-  champ("Nom et prénom du parent 1 / Name and first name of parent 1 / Apellido y nombres del padre", v("p1"), L, W);
+  barre("Famille");
+  champ("Nom et prénom du parent 1", v("p1"), L, 92);
+  champ("Nom et prénom du parent 2", v("p2"), 108, 96);
   suivante();
-  champ("Nom et prénom du parent 2 / Name and first name of parent 2 / Apellido y nombres de la madre", v("p2"), L, W);
+  champ("Années de scolarité complétées", v("scolarite"), L, W);
   suivante();
-  champ("Années de scolarité complétées / Years of schooling completed / Años de escolaridad completados", v("scolarite"), L, W);
-  y += 4;
+  y += 1;
 
-  /* Autorisation trilingue */
-  const lh = 2.3;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-  const para = id => doc.splitTextToSize(document.getElementById(id).textContent.replace(/\s+/g, " ").trim(), W - 4);
-  const pFr = para("auto-fr"), pEn = para("auto-en"), pEs = para("auto-es");
-  const hBoite = 8 + (pFr.length + pEn.length + pEs.length) * lh + 2 * 1 + 2;
+  /* Autorisation (français seulement) */
+  const lh = 2.65;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
+  const texteAuto = document.getElementById("auto-fr").textContent.replace(/\s+/g, " ").trim();
+  const lignesAuto = doc.splitTextToSize(texteAuto, W - 4);
+  const hBoite = 8 + lignesAuto.length * lh + 3;
   doc.setLineWidth(0.4); doc.rect(L, y, W, hBoite);
   doc.setFont("helvetica", "bold"); doc.setFontSize(7);
-  doc.text("Autorisation / Permission / Permiso", L + W / 2, y + 3.6, { align:"center" });
+  doc.text("Autorisation", L + W / 2, y + 3.6, { align:"center" });
   doc.setLineWidth(0.3); doc.line(L, y + 5, R, y + 5);
-  doc.setFont("helvetica", "normal"); doc.setFontSize(6);
-  let yp = y + 8;
-  [pFr, pEn, pEs].forEach(p => { doc.text(p, L + 2, yp); yp += p.length * lh + 1; });
-  y += hBoite + 13;
+  doc.setFont("helvetica", "normal"); doc.setFontSize(6.5);
+  doc.text(lignesAuto, L + 2, y + 8);
+  y += hBoite + 14;
 
   /* Signature et date */
-  txt("Signature / Firma :", L, true);
-  doc.setLineWidth(0.2); doc.line(L + 34, y + 1, L + 112, y + 1);
+  txt("Signature de l'élève :", L, true);
+  doc.setLineWidth(0.2); doc.line(L + 44, y + 1, L + 112, y + 1);
   const sig = imageSignature();
-  const s = Math.min(70 / sig.w, 12 / sig.h);
+  const s = Math.min(64 / sig.w, 12 / sig.h);
   const iw = sig.w * s, ih = sig.h * s;
-  doc.addImage(sig.data, "PNG", L + 36 + (70 - iw) / 2, y + 0.5 - ih, iw, ih);
-  champ("Date / Fecha", v("date_sign").replace(/-/g, " / "), 130, 74, true);
+  doc.addImage(sig.data, "PNG", L + 46 + (64 - iw) / 2, y + 0.5 - ih, iw, ih);
+  champ("Date", v("date_sign").replace(/-/g, " / "), 130, 74, true);
 
   /* Réservé à l'administration */
-  y += 5;
-  const yAdmin = y, hAdmin = 52;
+  y += 6;
+  const yAdmin = y, hAdmin = 54;
   doc.setFillColor(217, 217, 217); doc.rect(L, yAdmin, W, hAdmin, "F");
-  doc.setFillColor(170, 170, 170); doc.rect(L, yAdmin, W, 5, "F");
-  doc.setLineWidth(0.5); doc.line(L, yAdmin, R, yAdmin); doc.line(L, yAdmin + 5, R, yAdmin + 5);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(8);
-  doc.text("RÉSERVÉE À L’ADMINISTRATION / RESERVED FOR ADMINISTRATION / RESERVADO PARA LA ADMINISTRACIÓN",
-    L + W / 2, yAdmin + 3.5, { align:"center" });
+  doc.setFillColor(170, 170, 170); doc.rect(L, yAdmin, W, 5.5, "F");
+  doc.setLineWidth(0.5); doc.line(L, yAdmin, R, yAdmin); doc.line(L, yAdmin + 5.5, R, yAdmin + 5.5);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+  doc.text("RÉSERVÉ À L'ADMINISTRATION", L + W / 2, yAdmin + 3.9, { align:"center" });
 
-  y = yAdmin + 10;
+  y = yAdmin + 10.5;
   doc.setFont("helvetica", "bold"); doc.setFontSize(8.5);
   const titrePreuve = "Preuve de la résidence de l’élève au Québec";
   doc.text(titrePreuve, L + 2, y);
@@ -539,19 +537,18 @@ function construirePDF(form) {
   xa += txt("Permis de conduire ", xa, false);
   caseCochee(xa, false); xa += 3.2 + 8;
   champ("Autre, spécifiez", "", xa, R - 2 - xa);
-  y += 5.5;
+  y += 6;
   champ("Date", "", L + 2, 56, true);
   champ("Signature", "", L + 64, R - 2 - (L + 64), true);
 
-  y += 6.5;
+  y += 7;
   doc.setFont("helvetica", "bold"); doc.setFontSize(8.5);
   doc.text("Documents reçus :", L + 2, y);
   y += 5.5;
-  const sauts = 5;
   function ligneCases(items) {
     let xl = L + 2;
     items.forEach(t => { xl = option(t, false, xl, 5); });
-    y += sauts + 0.5;
+    y += 5.5;
   }
   ligneCases(["CC/RP", "Certificat de naissance", "Passeport", "Permis de travail/études", "CAQ"]);
   ligneCases(["NAS", "Spécimen de chèque", "Frais de garde"]);

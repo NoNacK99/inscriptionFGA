@@ -570,7 +570,7 @@ function construirePDF(form) {
   champ("Prénom", v("prenom"), L, 112);
   champ("Date de naissance", v("naissance").replace(/-/g, " / "), 128, 76);
   suivante();
-  champ("Ville de naissance", v("lieu"), L, 100, true);
+ champ("Ville de naissance", v("lieu"), L, 100);
   suivante();
   x = L;
   x += txt("Langue maternelle : ", x, false);
@@ -599,7 +599,7 @@ function construirePDF(form) {
   champ("Cellulaire", v("cellulaire"), 78, 48);
   champ("Téléphone (travail ou autre)", v("tel_autre"), 130, 74);
   suivante();
-  champ("Courrier électronique", v("courriel"), L, 92, true);
+  champ("Courrier électronique", v("courriel"), L, 92);
   x = 108;
   x += txt("Avez-vous besoin du transport scolaire ? ", x, false);
   x = option("Oui", coche("transport","Oui"), x);

@@ -704,13 +704,9 @@ if (!un) {
   blocAdmin("Preuve de la résidence du parent, du répondant ou du conjoint de l'élève au Québec",
     "J’atteste avoir pris connaissance des documents originaux suivants, présentés pour confirmer la résidence du parent, du répondant ou du conjoint de l’élève au Québec :");
 
-  /* Logo du bas */
-  if (compact) {
-    const logoY = yAdmin + hAdmin + 2;
-    placer(logoBas, R - 70, logoY, 70, Math.min(20, 277 - logoY), true);
-  } else {
-    placer(logoBas, R - 70, 256, 70, 20, true);
-  }
+/* Logo du bas : placé sous le bloc administratif, sans dépasser la page */
+const logoY = yAdmin + hAdmin + 2;
+placer(logoBas, R - 70, logoY, 70, Math.min(20, 277 - logoY), true);
 
   return doc;
 }

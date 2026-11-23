@@ -99,7 +99,7 @@
 </div>
 </fieldset>
 
-<fieldset>
+<fieldset id="section-parents">
 <legend>Parents</legend>
 <div id="bloc-p1">
   <label class="champ"><span id="l-p1-nom">Nom du parent 1</span><input type="text" name="p1_nom"></label>
@@ -211,6 +211,7 @@ function majRepondant() {
   const val = coche ? coche.value : "";
   const un = val === "Parent";
   document.getElementById("rep-autre").hidden = val !== "Autre";
+  document.getElementById("section-parents").hidden = !(val === "Parents" || un);
   document.getElementById("bloc-p2").hidden = un;
   document.getElementById("l-p1-nom").textContent = un ? "Nom du parent" : "Nom du parent 1";
   document.getElementById("l-p1-prenom").textContent = un ? "Prénom du parent" : "Prénom du parent 1";

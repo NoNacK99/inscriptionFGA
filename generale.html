@@ -70,8 +70,7 @@
 <label class="champ">Si autre, précisez<input type="text" name="langue_precision"></label>
 <div class="groupe"><span>Personne répondante (si l'élève a moins de 18 ans)</span>
   <label class="option"><input type="radio" name="repondant" value="Parents">Les deux parents</label>
-  <label class="option"><input type="radio" name="repondant" value="Parent 1">Parent 1</label>
-  <label class="option"><input type="radio" name="repondant" value="Parent 2">Parent 2</label>
+  <label class="option"><input type="radio" name="repondant" value="Parent 1">Un seul parent</label>
   <label class="option"><input type="radio" name="repondant" value="Autre">Autre personne</label>
 </div>
 <label class="champ" id="rep-autre" hidden>Nom et lien avec l'élève (tuteur, famille d'accueil, etc.)<input type="text" name="repondant_autre"></label>
@@ -103,8 +102,8 @@
 <fieldset>
 <legend>Parents</legend>
 <div id="bloc-p1">
-  <label class="champ">Nom du parent 1<input type="text" name="p1_nom"></label>
-  <label class="champ">Prénom du parent 1<input type="text" name="p1_prenom"></label>
+  <label class="champ"><span id="l-p1-nom">Nom du parent 1</span><input type="text" name="p1_nom"></label>
+  <label class="champ"><span id="l-p1-prenom">Prénom du parent 1</span><input type="text" name="p1_prenom"></label>
 </div>
 <div id="bloc-p2">
   <label class="champ">Nom du parent 2<input type="text" name="p2_nom"></label>
@@ -210,9 +209,11 @@ document.getElementById("section-scolaire").hidden = SERVICE_CLE !== "preinscrip
 function majRepondant() {
   const coche = document.querySelector('[name="repondant"]:checked');
   const val = coche ? coche.value : "";
+  const un = val === "Parent";
   document.getElementById("rep-autre").hidden = val !== "Autre";
-  document.getElementById("bloc-p1").hidden = val === "Parent 2";
-  document.getElementById("bloc-p2").hidden = val === "Parent 1";
+  document.getElementById("bloc-p2").hidden = un;
+  document.getElementById("l-p1-nom").textContent = un ? "Nom du parent" : "Nom du parent 1";
+  document.getElementById("l-p1-prenom").textContent = un ? "Prénom du parent" : "Prénom du parent 1";
 }
 document.querySelectorAll('[name="repondant"]').forEach(r => r.addEventListener("change", majRepondant));
 majRepondant();
@@ -402,7 +403,7 @@ function nettoyer(s) {
     f.lieu.value = hasard(["Alma", "Saguenay", "Dolbeau-Mistassini", "Roberval", "Saint-Félicien"]);
     radio("langue", "Français");
     f.langue_precision.value = "";
-    radio("repondant", hasard(["Parents", "Parent 1", "Parent 2"]));
+    radio("repondant", hasard(["Parents", "Parent"]));
     f.repondant_autre.value = "";
 
     f.no_civique.value = nombre(1, 999);
@@ -578,9 +579,8 @@ function construirePDF(form) {
   suivante();
   x = L;
   x += txt("Répondant (pour les moins de 18 ans) : ", x, false);
-  x = option("Parents", coche("repondant","Parents"), x);
-  x = option("Parent 1", coche("repondant","Parent 1"), x);
-  x = option("Parent 2", coche("repondant","Parent 2"), x);
+  x = option("Deux parents", coche("repondant","Parents"), x);
+  x = option("Un parent", coche("repondant","Parent"), x);
   champ("Autre", v("repondant_autre"), x, R - x);
   suivante();
 
@@ -606,18 +606,16 @@ function construirePDF(form) {
   suivante();
 
   /* Parents : seule la ligne du parent concerné est dessinée */
-  barre("Parents");
-  const rep = choix("repondant")[0] || "";
-  if (rep !== "Parent 2") {
-    champ("Nom du parent 1", v("p1_nom"), L, 92);
-    champ("Prénom du parent 1", v("p1_prenom"), 108, 96);
-    suivante();
-  }
-  if (rep !== "Parent 1") {
-    champ("Nom du parent 2", v("p2_nom"), L, 92);
-    champ("Prénom du parent 2", v("p2_prenom"), 108, 96);
-    suivante();
-  }
+barre("Parents");
+const un = (choix("repondant")[0] || "") === "Parent";
+champ(un ? "Nom du parent" : "Nom du parent 1", v("p1_nom"), L, 92);
+champ(un ? "Prénom du parent" : "Prénom du parent 1", v("p1_prenom"), 108, 96);
+suivante();
+if (!un) {
+  champ("Nom du parent 2", v("p2_nom"), L, 92);
+  champ("Prénom du parent 2", v("p2_prenom"), 108, 96);
+  suivante();
+}
 
   /* Situation scolaire actuelle (préinscription seulement) */
   if (compact) {
